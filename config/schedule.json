@@ -1,0 +1,36 @@
+{
+  "schedule": [
+    {
+      "id": 0,
+      "eventType": "relays",
+      "status": "active",
+      "date": 1559645774103,
+      "duration": 300000,
+      "sensor": null
+    },
+    {
+      "id": 1,
+      "eventType": "relay",
+      "status": "waiting",
+      "date": 1559645774103,
+      "duration": null,
+      "sensor": {
+        "id": 3,
+        "trigger": [
+          205,
+          230
+        ],
+        "units": "°C"
+      }
+    },
+    {
+      "id": 5,
+      "eventType": "alarm",
+      "status": "suspend",
+      "date": "MON_FRI",
+      "duration": null,
+      "repeat": null,
+      "sound": "school_bell.mp3"
+    }
+  ]
+}
