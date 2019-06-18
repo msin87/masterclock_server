@@ -5,12 +5,26 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const es = express();
 const config={clockLines:[]};
+const log=console.log;
 
 es.use(bodyParser.json());
 es.use(bodyParser.urlencoded(({extended:true})));
 
+let updateConfigFile = configName => {
+    return new Promise((resolve, reject) => {
+        fs.writeFile(`${__dirname}/config/${configName}.json`,JSON.stringify(config[configName],null,2),'utf8',error=>{
+            if (error) {
+                log(error);
+                reject (error);
+            }
+            log(`CONFIG UPDATE: ${configName}.json `);
+        });
+    })
+
+};
+
 fs.readFile(`./config/clockLines.json`, 'utf8', (err, data) => {
-    if (err) console.log(err + '');
+    if (err) log(err + '');
     else
     {
         let parsedData=JSON.parse(data);
@@ -21,14 +35,14 @@ fs.readFile(`./config/clockLines.json`, 'utf8', (err, data) => {
     }
 });
 fs.readFile(`./config/system.json`, 'utf8', (err, data) => {
-    if (err) console.log(err + '');
+    if (err) log(err + '');
     else
     {
         config.system = JSON.parse(data).system;
     }
 });
 fs.readFile(`./config/schedule.json`, 'utf8', (err, data) => {
-    if (err) console.log(err + '');
+    if (err) log(err + '');
     else
     {
         config.schedule = JSON.parse(data).schedule;
@@ -65,35 +79,22 @@ es.post('/clockLines',(req, res) => {
    else
    {
        config.clockLines[id]=request;
-       fs.writeFile(`${__dirname}/config/clockLines.json`,JSON.stringify(config.clockLines,null,2),'utf8',(err)=>{
-           console.log(err);
-           res.sendStatus(200);
-       });
-
+       updateConfigFile('clockLines').then(res.sendStatus(200));
    }
 });
 es.put('/clockLines',(req, res) => {
-    let request=req.body;
-    let id=Number(request.id);
-    if (!config.clockLines[id])
+    if (!config.clockLines[Number(req.body.id)])
     {
-        res.status(400).send(`Cannot find clock line with id "${request.id}"`);
+        res.status(400).send(`Cannot find clock line with id "${req.body.id}"`);
         return;
     }
-    config.clockLines[id]=request;
-    fs.writeFile(`${__dirname}/config/clockLines.json`,JSON.stringify(config.clockLines,null,2),'utf8',(err)=>{
-        console.log(err);
-        res.sendStatus(200);
-    });
+    config.clockLines[Number(req.body.id)]=req.body;
+    updateConfigFile('clockLines').then(res.sendStatus(200));
 
 });
 es.delete('/clockLines/:id',(req,res)=>{
     config.clockLines[Number(req.params.id)] = null;
-    fs.writeFile(`${__dirname}/config/clockLines.json`,JSON.stringify(config.clockLines,null,2),'utf8',(err)=>{
-        console.log(err);
-        res.sendStatus(200);
-    });
-
+    updateConfigFile('clockLines').then(res.sendStatus(200));
 });
 
 
