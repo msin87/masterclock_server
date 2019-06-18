@@ -4,7 +4,7 @@ const ws = require('ws');
 const express = require('express');
 const bodyParser = require('body-parser');
 const es = express();
-const config={};
+const config={clockLines:[]};
 
 es.use(bodyParser.json());
 es.use(bodyParser.urlencoded(({extended:true})));
@@ -13,7 +13,11 @@ fs.readFile(`./config/clockLines.json`, 'utf8', (err, data) => {
     if (err) console.log(err + '');
     else
     {
-        config.clockLines = JSON.parse(data);
+        let parsedData=JSON.parse(data);
+        for (let line of parsedData){
+            if (!line) continue;
+            config.clockLines[line.id]=line;
+        }
     }
 });
 fs.readFile(`./config/system.json`, 'utf8', (err, data) => {
@@ -32,63 +36,57 @@ fs.readFile(`./config/schedule.json`, 'utf8', (err, data) => {
 });
 
 es.get('/schedule', (req, res) => {
-    fs.readFile(`${__dirname}/config/schedule.json`, 'utf8', (err, data) => {
-        if (err) throw err;
-        res.json(JSON.parse(data));
-    })
-
+        res.json(JSON.parse(config.schedule));
 });
 es.get('/system', (req, res) => {
-    fs.readFile(`${__dirname}/config/system.json`, 'utf8', (err, data) => {
-        if (err) throw err;
-        res.json(JSON.parse(data));
-    })
-
+    res.json(JSON.parse(config.system));
 });
 es.get('/clockLines', (req, res) => {
-    fs.readFile(`${__dirname}/config/clockLines.json`, 'utf8', (err, data) => {
-        if (err) throw err;
-        res.json(JSON.parse(data));
-    })
-
+    res.json(config.clockLines);
 });
 es.get('/clockLines/:id', (req, res) => {
-    fs.readFile(`${__dirname}/config/clockLines.json`, 'utf8', (err, data) => {
-        if (err) throw err;
-        let line = config.clockLines.find(l=>(l.id===Number(req.params.id)));
-        res.json(line);
-    })
 
+    let line=config.clockLines[Number(req.params.id)];
+    if (line){
+        res.json(line);
+    }
+    else
+    {
+        res.sendStatus(404);
+    }
 });
 es.post('/clockLines',(req, res) => {
    let request=req.body;
-   for (let c of config.clockLines){
-       if (c.id===request.id)  {
-           res.status(400).send(`Clock line with id "${request.id}" is already exist.`);
-           return;
-       }
+   let id=Number(request.id);
+   if (config.clockLines[id])
+   {
+       res.status(400).send(`Clock line with id "${request.id}" is already exist.`);
+       return;
    }
-   config.clockLines.push(request);
-   let json=JSON.stringify(config.clockLines,null,2);
-   fs.writeFile(`${__dirname}/config/clockLines.json`,json,'utf8',(err)=>{
-       console.log(err);
-   });
-   res.sendStatus(200);
+   else
+   {
+       config.clockLines[id]=request;
+       fs.writeFile(`${__dirname}/config/clockLines.json`,JSON.stringify(config.clockLines,null,2),'utf8',(err)=>{
+           console.log(err);
+       });
+       res.sendStatus(200);
+   }
 });
-es.put('/clockLines/:id',(req, res) => {
+es.put('/clockLines',(req, res) => {
     let request=req.body;
-    for (let c of config.clockLines){
-        if (c.id===request.id)  {
-            config.clockLines
-        }
+    let id=Number(request.id);
+    if (!config.clockLines[id])
+    {
+        res.status(400).send(`Cannot find clock line with id "${request.id}"`);
+        return;
     }
-    res.status(400).send(`Cannot find clock line with id "${request.id}"`);
-    let json=JSON.stringify(config.clockLines,null,2);
-    fs.writeFile(`${__dirname}/config/clockLines.json`,json,'utf8',(err)=>{
+    config.clockLines[id]=request;
+    fs.writeFile(`${__dirname}/config/clockLines.json`,JSON.stringify(config.clockLines,null,2),'utf8',(err)=>{
         console.log(err);
     });
     res.sendStatus(200);
 });
+
 
 
 es.listen(3000, () => console.log('Express started at port 3000! Folder: ' + __dirname));

@@ -1,0 +1,38 @@
+[
+  {
+    "id": 0,
+    "time": "16:00",
+    "zone": "Europe/Moscow+3",
+    "status": "run",
+    "dts": false
+  },
+  {
+    "id": 1,
+    "time": "16:00",
+    "zone": "Europe/Moscow+3",
+    "status": "run",
+    "dts": false
+  },
+  null,
+  {
+    "id": 3,
+    "time": "17:00",
+    "zone": "Europe/Moscow+3",
+    "status": "run",
+    "dts": false
+  },
+  {
+    "id": 4,
+    "time": "17:00",
+    "zone": "Europe/Moscow+3",
+    "status": "run",
+    "dts": false
+  },
+  {
+    "id": 5,
+    "time": "16:00",
+    "zone": "Europe/Moscow+3",
+    "status": "run",
+    "dts": false
+  }
+]
