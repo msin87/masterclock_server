@@ -4,7 +4,7 @@ const ws = require('ws');
 const express = require('express');
 const bodyParser = require('body-parser');
 const es = express();
-const config = {clockLines: []};
+const config = {clockLines: [], schedule: []};
 const log = console.log;
 
 es.use(bodyParser.json());
@@ -27,9 +27,9 @@ fs.readFile(`./config/clockLines.json`, 'utf8', (err, data) => {
     if (err) log(err + '');
     else {
         let parsedData = JSON.parse(data);
-        for (let line of parsedData) {
-            if (!line) continue;
-            config.clockLines[line.id] = line;
+        for (let item of parsedData) {
+            if (!item) continue;
+            config.clockLines[item.id] = item;
         }
     }
 });
@@ -42,15 +42,16 @@ fs.readFile(`./config/system.json`, 'utf8', (err, data) => {
 fs.readFile(`./config/schedule.json`, 'utf8', (err, data) => {
     if (err) log(err + '');
     else {
-        config.schedule = JSON.parse(data).schedule;
+        let parsedData = JSON.parse(data);
+        for (let item of parsedData) {
+            if (!item) continue;
+            config.schedule[item.id] = item;
+        }
     }
 });
 
 es.get('/config', (req, res) => {
     res.json(config);
-});
-es.get('/config/system', (req, res) => {
-    res.json(JSON.parse(config.system));
 });
 es.get('/config/clockLines', (req, res) => {
     res.json(config.clockLines);
@@ -66,13 +67,11 @@ es.get('/config/clockLines/:id', (req, res) => {
     }
 });
 es.post('/config/clockLines', (req, res) => {
-    let request = req.body;
-    let id = Number(request.id);
-    if (config.clockLines[id]) {
-        res.status(400).send(`Clock line with id "${request.id}" is already exist.`);
+    if (config.clockLines[Number(req.body.id)]) {
+        res.status(400).send(`Clock line with id "${req.body.id}" is already exist.`);
     }
     else {
-        config.clockLines[id] = request;
+        config.clockLines[Number(req.body.id)] = req.body;
         updateConfigFile('clockLines').then(res.sendStatus(200));
     }
 });
@@ -90,6 +89,28 @@ es.delete('/config/clockLines/:id', (req, res) => {
     updateConfigFile('clockLines').then(res.sendStatus(200));
 });
 //system config section
-
+es.get('/config/system', (req, res) => {
+    res.json(config.system);
+});
+es.put('/config/system', (req, res) => {
+    config.system=req.body;
+    updateConfigFile('system').then(res.sendStatus(200));
+});
+//schedule config section
+es.get('/config/schedule', (req, res) => {
+    res.json(config.schedule);
+});
+es.post('/config/schedule', (req, res) => {
+    if (config.schedule[Number(req.body.id)]) {
+        res.status(400).send(`Schedule with id "${req.body.id}" is already exist.`);
+    }
+    else if (Number(req.body.id)>=+config.system["maxScheduleEvents"]) {
+        res.status(400).send(`Maximum schedule events is reached`);
+    }
+    else {
+        config.schedule[req.body.id] = req.body;
+        updateConfigFile('schedule').then(res.sendStatus(200));
+    }
+});
 
 es.listen(3000, () => console.log('Express started at port 3000! Folder: ' + __dirname));
