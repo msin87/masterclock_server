@@ -13,24 +13,17 @@
     "status": "run",
     "dts": false
   },
+  {
+    "id": 2,
+    "time": "12:00",
+    "zone": "Europe/Moscow+3",
+    "status": "run",
+    "dts": false
+  },
   null,
   {
-    "id": 3,
-    "time": "17:00",
-    "zone": "Europe/Moscow+3",
-    "status": "run",
-    "dts": false
-  },
-  {
     "id": 4,
-    "time": "17:00",
-    "zone": "Europe/Moscow+3",
-    "status": "run",
-    "dts": false
-  },
-  {
-    "id": 5,
-    "time": "16:00",
+    "time": "12:00",
     "zone": "Europe/Moscow+3",
     "status": "run",
     "dts": false

@@ -61,15 +61,15 @@ es.post('/clockLines',(req, res) => {
    if (config.clockLines[id])
    {
        res.status(400).send(`Clock line with id "${request.id}" is already exist.`);
-       return;
    }
    else
    {
        config.clockLines[id]=request;
        fs.writeFile(`${__dirname}/config/clockLines.json`,JSON.stringify(config.clockLines,null,2),'utf8',(err)=>{
            console.log(err);
+           res.sendStatus(200);
        });
-       res.sendStatus(200);
+
    }
 });
 es.put('/clockLines',(req, res) => {
@@ -83,8 +83,17 @@ es.put('/clockLines',(req, res) => {
     config.clockLines[id]=request;
     fs.writeFile(`${__dirname}/config/clockLines.json`,JSON.stringify(config.clockLines,null,2),'utf8',(err)=>{
         console.log(err);
+        res.sendStatus(200);
     });
-    res.sendStatus(200);
+
+});
+es.delete('/clockLines/:id',(req,res)=>{
+    config.clockLines[Number(req.params.id)] = null;
+    fs.writeFile(`${__dirname}/config/clockLines.json`,JSON.stringify(config.clockLines,null,2),'utf8',(err)=>{
+        console.log(err);
+        res.sendStatus(200);
+    });
+
 });
 
 
