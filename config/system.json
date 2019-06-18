@@ -1,7 +1,6 @@
 {
-  "system":{
-    "displayOff_s":30,
-    "password":12345,
-    "language": "ru"
-  }
+  "displayOff_s": 30,
+  "password": 12345,
+  "language": "ru",
+  "mainCurrentLimit": 4000
 }
