@@ -112,5 +112,9 @@ es.post('/config/schedule', (req, res) => {
         updateConfigFile('schedule').then(res.sendStatus(200));
     }
 });
+es.delete('/config/schedule/:id', (req, res) => {
+    config.schedule[Number(req.params.id)] = null;
+    updateConfigFile('schedule').then(res.sendStatus(200));
+});
 
 es.listen(3000, () => console.log('Express started at port 3000! Folder: ' + __dirname));

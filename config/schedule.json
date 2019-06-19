@@ -22,14 +22,7 @@
       "units": "°C"
     }
   },
-  {
-    "id": 2,
-    "eventType": "relays",
-    "status": "active",
-    "date": 1559645774103,
-    "duration": 300000,
-    "sensor": null
-  },
+  null,
   {
     "id": 3,
     "eventType": "alarm",
