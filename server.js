@@ -1,4 +1,3 @@
-console.log("hello");
 const fs = require('fs');
 const ws = require('ws');
 const express = require('express');
@@ -6,10 +5,17 @@ const bodyParser = require('body-parser');
 const es = express();
 const config = {clockLines: [], schedule: []};
 const log = console.log;
-
+const MasterClockConfig = require ('./models/clocklines.js')
 es.use(bodyParser.json());
 es.use(bodyParser.urlencoded(({extended: true})));
-
+es.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+let configFiles = ['system','clockLines','schedule'];
+let c = MasterClockConfig.Config(configFiles);
+c.readFile('./config/system.json');
 let updateConfigFile = configName => {
     return new Promise((resolve, reject) => {
         fs.writeFile(`${__dirname}/config/${configName}.json`, JSON.stringify(config[configName], null, 2), 'utf8', error => {
@@ -117,4 +123,4 @@ es.delete('/config/schedule/:id', (req, res) => {
     updateConfigFile('schedule').then(res.sendStatus(200));
 });
 
-es.listen(3000, () => console.log('Express started at port 3000! Folder: ' + __dirname));
+es.listen(3001, () => console.log('Express started at port 3001! Folder: ' + __dirname));

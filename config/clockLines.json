@@ -3,57 +3,56 @@
     "id": 0,
     "time": "16:00",
     "zone": "Europe/Moscow+3",
-    "status": "run",
+    "status": "RUN",
+    "load": "70%",
     "dts": false
   },
   {
     "id": 1,
     "time": "15:00",
     "zone": "Europe/Moscow+3",
-    "status": "run",
+    "status": "RUN",
+    "load": "60%",
     "dts": false
   },
   {
     "id": 2,
     "time": "12:00",
     "zone": "Europe/Moscow+3",
-    "status": "run",
+    "status": "RUN",
+    "load": "20%",
     "dts": false
   },
   {
     "id": 3,
     "time": "12:00",
     "zone": "Europe/Moscow+3",
-    "status": "run",
+    "status": "RUN",
+    "load": "22%",
     "dts": false
   },
   {
     "id": 4,
     "time": "12:00",
     "zone": "Europe/Moscow+3",
-    "status": "run",
+    "status": "STOP",
+    "load": "24%",
     "dts": false
   },
   {
     "id": 5,
-    "time": "12:00",
+    "time": "11:00",
     "zone": "Europe/Moscow+3",
-    "status": "run",
+    "status": "STOP",
+    "load": "29%",
     "dts": false
   },
   {
     "id": 6,
-    "time": "15:00",
-    "zone": "Europe/Moscow+3",
-    "status": "run",
-    "dts": false
-  },
-  null,
-  {
-    "id": 8,
     "time": "12:00",
     "zone": "Europe/Moscow+3",
-    "status": "run",
+    "status": "RUN",
+    "load": "22%",
     "dts": false
   }
 ]
