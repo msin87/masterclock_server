@@ -3,124 +3,72 @@ const ws = require('ws');
 const express = require('express');
 const bodyParser = require('body-parser');
 const es = express();
-const config = {clockLines: [], schedule: []};
-const log = console.log;
-const MasterClockConfig = require ('./models/clocklines.js')
+
+
+const ConfigAPI = require('./API/configAPI.js').ConfigAPI(['system', 'clockLines', 'schedule']);
+ConfigAPI.init();
 es.use(bodyParser.json());
 es.use(bodyParser.urlencoded(({extended: true})));
-es.use(function(req, res, next) {
+es.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
-let configFiles = ['system','clockLines','schedule'];
-let c = MasterClockConfig.Config(configFiles);
-c.readFile('./config/system.json');
-let updateConfigFile = configName => {
-    return new Promise((resolve, reject) => {
-        fs.writeFile(`${__dirname}/config/${configName}.json`, JSON.stringify(config[configName], null, 2), 'utf8', error => {
-            if (error) {
-                log(error);
-                reject(error);
-            }
-            log(`CONFIG UPDATE: ${configName}.json `);
-        });
-    })
 
-};
-
-fs.readFile(`./config/clockLines.json`, 'utf8', (err, data) => {
-    if (err) log(err + '');
-    else {
-        let parsedData = JSON.parse(data);
-        for (let item of parsedData) {
-            if (!item) continue;
-            config.clockLines[item.id] = item;
-        }
-    }
-});
-fs.readFile(`./config/system.json`, 'utf8', (err, data) => {
-    if (err) log(err + '');
-    else {
-        config.system = JSON.parse(data);
-    }
-});
-fs.readFile(`./config/schedule.json`, 'utf8', (err, data) => {
-    if (err) log(err + '');
-    else {
-        let parsedData = JSON.parse(data);
-        for (let item of parsedData) {
-            if (!item) continue;
-            config.schedule[item.id] = item;
-        }
-    }
-});
 
 es.get('/config', (req, res) => {
-    res.json(config);
+    res.json(ConfigAPI.getConfig());
 });
 es.get('/config/clockLines', (req, res) => {
-    res.json(config.clockLines);
+    res.json(ConfigAPI.getConfig('clockLines'));
 });
 es.get('/config/clockLines/:id', (req, res) => {
-
-    let line = config.clockLines[Number(req.params.id)];
-    if (line) {
-        res.json(line);
-    }
-    else {
-        res.sendStatus(404);
-    }
+    let line = ConfigAPI.getConfig('clockLines', req.params.id);
+    line ? res.json(line) : res.sendStatus(404);
 });
 es.post('/config/clockLines', (req, res) => {
-    if (config.clockLines[Number(req.body.id)]) {
-        res.status(400).send(`Clock line with id "${req.body.id}" is already exist.`);
-    }
-    else {
-        config.clockLines[Number(req.body.id)] = req.body;
-        updateConfigFile('clockLines').then(res.sendStatus(200));
-    }
-});
-es.put('/config/clockLines', (req, res) => {
-    if (!config.clockLines[Number(req.body.id)]) {
-        res.status(400).send(`Cannot find clock line with id "${req.body.id}"`);
-        return;
-    }
-    config.clockLines[Number(req.body.id)] = req.body;
-    updateConfigFile('clockLines').then(res.sendStatus(200));
+    ConfigAPI.getConfig('clockLines', req.body.id) ?
+        res.status(400).send(`Clock line with id "${req.body.id}" is already exist.`)
+        : ConfigAPI.updateConfig('clockLines', req.body).then(res.sendStatus(200));
 
 });
+es.put('/config/clockLines', (req, res) => {
+    ConfigAPI.getConfig('clockLines', req.body.id) ?
+        ConfigAPI.updateConfig('clockLines', req.body).then(res.sendStatus(200))
+        : res.status(404).send(`Cannot find clock line with id "${req.body.id}"`);
+});
 es.delete('/config/clockLines/:id', (req, res) => {
-    config.clockLines[Number(req.params.id)] = null;
-    updateConfigFile('clockLines').then(res.sendStatus(200));
+    ConfigAPI.eraseConfigElementByID('clockLines', req.params.id).then(res.sendStatus(200));
 });
 //system config section
 es.get('/config/system', (req, res) => {
-    res.json(config.system);
+    res.json(ConfigAPI.getConfig('system'));
 });
 es.put('/config/system', (req, res) => {
-    config.system=req.body;
-    updateConfigFile('system').then(res.sendStatus(200));
+    ConfigAPI.updateConfig('system', req.body).then(res.sendStatus(200));
 });
-//schedule config section
+// //schedule config section
+
+es.get('/config/schedule/:id', (req, res) => {
+    let schedule=ConfigAPI.getConfig('schedule', req.params.id);
+    schedule?res.json(schedule):res.sendStatus(404);
+});
 es.get('/config/schedule', (req, res) => {
-    res.json(config.schedule);
+    res.json(ConfigAPI.getConfig('schedule'));
 });
 es.post('/config/schedule', (req, res) => {
-    if (config.schedule[Number(req.body.id)]) {
-        res.status(400).send(`Schedule with id "${req.body.id}" is already exist.`);
+    if (ConfigAPI.getConfig('schedule', req.body.id)) {
+        res.status(400).send(`Schedule with id '${req.body.id}' is already exist.`);
     }
-    else if (Number(req.body.id)>=+config.system["maxScheduleEvents"]) {
-        res.status(400).send(`Maximum schedule events is reached`);
+    else if ((+req.body.id) >= +ConfigAPI.getConfig('system')['maxScheduleEvents']) {
+        res.status(400).send('Maximum schedule events is reached');
     }
     else {
-        config.schedule[req.body.id] = req.body;
-        updateConfigFile('schedule').then(res.sendStatus(200));
+        ConfigAPI.updateConfig('schedule', req.body).then(res.sendStatus(200));
     }
 });
 es.delete('/config/schedule/:id', (req, res) => {
-    config.schedule[Number(req.params.id)] = null;
-    updateConfigFile('schedule').then(res.sendStatus(200));
+    ConfigAPI.eraseConfigElementByID('schedule',req.params.id).then(res.sendStatus(200));
 });
 
 es.listen(3001, () => console.log('Express started at port 3001! Folder: ' + __dirname));

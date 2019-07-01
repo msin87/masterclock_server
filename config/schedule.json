@@ -22,14 +22,14 @@
       "units": "°C"
     }
   },
-  null,
   {
-    "id": 3,
+    "id": 2,
     "eventType": "alarm",
     "status": "suspend",
     "date": "MON_FRI",
     "duration": null,
     "repeat": null,
     "sound": "school_bell.mp3"
-  }
+  },
+  null
 ]
