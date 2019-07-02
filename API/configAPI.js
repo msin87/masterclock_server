@@ -2,7 +2,7 @@ const fs = require('fs');
 const CONFIGPATH = './config/';
 const log = console.log;
 const ConfigAPI = (filenames) => {
-    let config = {};
+    this.config = this.config?this.config:{};
     let readFile = (fileName) => {
         return new Promise((resolve, reject) => {
             fs.readFile(fileName, 'utf8', (err, data) => {
@@ -15,21 +15,26 @@ const ConfigAPI = (filenames) => {
                     if (Array.isArray(parsedData)) {
                         for (let item of parsedData) {
                             if (!item) continue;
-                            if (!config[configName]) config[configName] = [];
-                            config[configName][item.id] = item;
+                            if (!this.config[configName]) this.config[configName] = [];
+                            this.config[configName][item.id] = item;
                         }
                     }
                     else {
-                        config[configName] = parsedData;
+                        this.config[configName] = parsedData;
                     }
-                    resolve(config);
+                    // fs.stat(fileName,(serr,stats)=>{
+                    //     config[configName].lastModified=stats.mtime;
+                    //     resolve(config);
+                    // })
+
+                    resolve(this.config);
                 }
             })
         })
     };
     let writeFile = (filename) => {
         return new Promise((resolve, reject) => {
-            fs.writeFile(CONFIGPATH + filename + '.json', JSON.stringify(config[filename], null, 2), 'utf8', error => {
+            fs.writeFile(CONFIGPATH + filename + '.json', JSON.stringify(this.config[filename], null, 2), 'utf8', error => {
                 if (error) {
                     log(error);
                     reject(error);
@@ -48,12 +53,12 @@ const ConfigAPI = (filenames) => {
         updateConfig: (configName, configData) => {
             if (configData.hasOwnProperty('id'))
             {
-                config[configName][configData['id']] = configData;
+                this.config[configName][configData['id']] = configData;
                 log(`CONFIG UPDATE: ${configName} id: ${configData['id']}`);
             }
             else
             {
-                config[configName] = configData;
+                this.config[configName] = configData;
                 log(`CONFIG UPDATE: ${configName}`);
             }
 
@@ -61,14 +66,15 @@ const ConfigAPI = (filenames) => {
 
         },
         getConfig: (configName,id) => {
-            if (!configName) return config;
-            if (id) return config[configName][Number(id)];
-            return config[configName];
+            if (!configName) return this.config;
+            if (id) return this.config[configName][Number(id)];
+            return this.config[configName];
         },
         eraseConfigElementByID: (configName,id)=>{
-            config[configName][id]=null;
+            this.config[configName][id]=null;
             return writeFile(configName);
-        }
+        },
+
     }
 };
 module.exports.ConfigAPI = ConfigAPI;

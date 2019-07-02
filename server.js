@@ -1,4 +1,3 @@
-const fs = require('fs');
 const ws = require('ws');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -21,6 +20,7 @@ es.get('/config', (req, res) => {
 });
 es.get('/config/clockLines', (req, res) => {
     res.json(ConfigAPI.getConfig('clockLines'));
+    console.log('REQUEST: clockLines',req.body);
 });
 es.get('/config/clockLines/:id', (req, res) => {
     let line = ConfigAPI.getConfig('clockLines', req.params.id);
@@ -55,6 +55,11 @@ es.get('/config/schedule/:id', (req, res) => {
 });
 es.get('/config/schedule', (req, res) => {
     res.json(ConfigAPI.getConfig('schedule'));
+});
+es.put('/config/schedule', (req, res) => {
+    ConfigAPI.getConfig('schedule', req.body.id)?
+        ConfigAPI.updateConfig('schedule', req.body).then(res.sendStatus(200))
+        : res.status(404).send(`Cannot find schedule with id "${req.body.id}"`);
 });
 es.post('/config/schedule', (req, res) => {
     if (ConfigAPI.getConfig('schedule', req.body.id)) {

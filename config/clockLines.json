@@ -9,9 +9,9 @@
   },
   {
     "id": 1,
-    "time": "15:00",
+    "time": "11:00",
     "zone": "Europe/Moscow+3",
-    "status": "RUN",
+    "status": "STOP",
     "load": "60%",
     "dts": false
   },
@@ -54,28 +54,5 @@
     "status": "RUN",
     "load": "22%",
     "dts": false
-  },
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  {
-    "id": 14,
-    "eventType": "relays",
-    "status": "active",
-    "date": 1559645774103,
-    "duration": 300000,
-    "sensor": null
-  },
-  {
-    "id": 15,
-    "eventType": "relays",
-    "status": "active",
-    "date": 1559645774103,
-    "duration": 300000,
-    "sensor": null
   }
 ]
