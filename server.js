@@ -29,12 +29,12 @@ es.get('/config/clockLines/:id', (req, res) => {
 es.post('/config/clockLines', (req, res) => {
     ConfigAPI.getConfig('clockLines', req.body.id) ?
         res.status(400).send(`Clock line with id "${req.body.id}" is already exist.`)
-        : ConfigAPI.updateConfig('clockLines', req.body).then(res.sendStatus(200));
+        : ConfigAPI.push('clockLines', req.body).then(res.sendStatus(200));
 
 });
 es.put('/config/clockLines', (req, res) => {
     ConfigAPI.getConfig('clockLines', req.body.id) ?
-        ConfigAPI.updateConfig('clockLines', req.body).then(res.sendStatus(200))
+        ConfigAPI.update('clockLines', req.body).then(res.sendStatus(200))
         : res.status(404).send(`Cannot find clock line with id "${req.body.id}"`);
 });
 es.delete('/config/clockLines/:id', (req, res) => {
@@ -45,7 +45,7 @@ es.get('/config/system', (req, res) => {
     res.json(ConfigAPI.getConfig('system'));
 });
 es.put('/config/system', (req, res) => {
-    ConfigAPI.updateConfig('system', req.body).then(res.sendStatus(200));
+    ConfigAPI.update('system', req.body).then(res.sendStatus(200));
 });
 // //schedule config section
 
@@ -58,7 +58,7 @@ es.get('/config/schedule', (req, res) => {
 });
 es.put('/config/schedule', (req, res) => {
     ConfigAPI.getConfig('schedule', req.body.id)?
-        ConfigAPI.updateConfig('schedule', req.body).then(res.sendStatus(200))
+        ConfigAPI.update('schedule', req.body).then(res.sendStatus(200))
         : res.status(404).send(`Cannot find schedule with id "${req.body.id}"`);
 });
 es.post('/config/schedule', (req, res) => {
@@ -69,7 +69,7 @@ es.post('/config/schedule', (req, res) => {
         res.status(400).send('Maximum schedule events is reached');
     }
     else {
-        ConfigAPI.updateConfig('schedule', req.body).then(res.sendStatus(200));
+        ConfigAPI.push('schedule', req.body).then(res.sendStatus(200));
     }
 });
 es.delete('/config/schedule/:id', (req, res) => {

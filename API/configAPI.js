@@ -2,7 +2,7 @@ const fs = require('fs');
 const CONFIGPATH = './config/';
 const log = console.log;
 const ConfigAPI = (filenames) => {
-    this.config = this.config?this.config:{};
+    this.config = this.config ? this.config : {};
     let readFile = (fileName) => {
         return new Promise((resolve, reject) => {
             fs.readFile(fileName, 'utf8', (err, data) => {
@@ -36,10 +36,9 @@ const ConfigAPI = (filenames) => {
         return new Promise((resolve, reject) => {
             fs.writeFile(CONFIGPATH + filename + '.json', JSON.stringify(this.config[filename], null, 2), 'utf8', error => {
                 if (error) {
-                    log(error);
                     reject(error);
                 }
-                log(`WRITE FILE: ${filename}.json `);
+                resolve(`WRITE FILE: ${filename}.json`);
             });
         })
     };
@@ -50,14 +49,22 @@ const ConfigAPI = (filenames) => {
                 readFile(CONFIGPATH + f + '.json');
             }
         },
-        updateConfig: (configName, configData) => {
-            if (configData.hasOwnProperty('id'))
-            {
+        push: (configName, configData) => {
+            return new Promise((resolve, reject) => {
+                this.config[configName].push(configData); //add data to array
+                writeFile(configName).then(resolve(`PUSH: Added data to ${configName}`)).catch(error => {
+                    this.config[configName].pop(); //remove added data from this.config[configName]
+                    reject(`ERROR: Can't save configuration to file. Reason: \r\n${error}`);
+                });
+            })
+        },
+        update: (configName, configData) => {
+
+            if (configData.hasOwnProperty('id')) {
                 this.config[configName][configData['id']] = configData;
                 log(`CONFIG UPDATE: ${configName} id: ${configData['id']}`);
             }
-            else
-            {
+            else {
                 this.config[configName] = configData;
                 log(`CONFIG UPDATE: ${configName}`);
             }
@@ -65,13 +72,17 @@ const ConfigAPI = (filenames) => {
             return writeFile(configName);
 
         },
-        getConfig: (configName,id) => {
+        getConfig: (configName, id) => {
             if (!configName) return this.config;
-            if (id) return this.config[configName][Number(id)];
-            return this.config[configName];
+            return new Promise((resolve, reject) => {
+                readFile(CONFIGPATH + configName + '.json').then(() => {
+                    if (id) resolve(this.config[configName][Number(id)]);
+                    else resolve(this.config[configName]);
+                }).catch(err => reject(err))
+            })
         },
-        eraseConfigElementByID: (configName,id)=>{
-            this.config[configName][id]=null;
+        eraseConfigElementByID: (configName, id) => {
+            this.config[configName][id] = null;
             return writeFile(configName);
         },
 

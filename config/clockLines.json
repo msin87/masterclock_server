@@ -32,14 +32,6 @@
     "dts": false
   },
   {
-    "id": 4,
-    "time": "12:00",
-    "zone": "Europe/Moscow+3",
-    "status": "STOP",
-    "load": "24%",
-    "dts": false
-  },
-  {
     "id": 5,
     "time": "11:00",
     "zone": "Europe/Moscow+3",
@@ -53,6 +45,14 @@
     "zone": "Europe/Moscow+3",
     "status": "RUN",
     "load": "22%",
+    "dts": false
+  },
+  {
+    "id": 9,
+    "time": "16:00",
+    "zone": "Europe/Moscow+3",
+    "status": "RUN",
+    "load": "70%",
     "dts": false
   }
 ]
