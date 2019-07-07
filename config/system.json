@@ -2,6 +2,5 @@
   "displayOff_s": 80,
   "password": 12345,
   "language": "ru",
-  "maxScheduleEvents": 20,
   "mainCurrentLimit": 4000
 }

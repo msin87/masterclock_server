@@ -1,17 +1,18 @@
 [
   {
     "id": 0,
-    "eventType": "relays",
-    "status": "active",
-    "date": 1559645774103,
-    "duration": 300000,
-    "sensor": null
+    "eventType": "alarm",
+    "status": "suspend",
+    "date": "MON_FRI",
+    "duration": null,
+    "repeat": null,
+    "sound": "school_bell.mp3"
   },
   {
     "id": 1,
     "eventType": "relay",
     "status": "waiting",
-    "date": 1559645774103,
+    "date": 1559645774112,
     "duration": null,
     "sensor": {
       "id": 3,
@@ -24,11 +25,17 @@
   },
   {
     "id": 2,
-    "eventType": "alarm",
-    "status": "suspend",
-    "date": "MON_FRI",
+    "eventType": "relay",
+    "status": "waiting",
+    "date": 1559645774112,
     "duration": null,
-    "repeat": null,
-    "sound": "school_bell.mp3"
+    "sensor": {
+      "id": 3,
+      "trigger": [
+        205,
+        230
+      ],
+      "units": "°C"
+    }
   }
 ]

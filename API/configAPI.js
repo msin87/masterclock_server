@@ -42,6 +42,11 @@ const ConfigAPI = (filenames) => {
             });
         })
     };
+    let recalcID = (configName) => {
+        for (let i = 0; i < this.config[configName].length; i++) {
+            this.config[configName][i]['id'] = i;
+        }
+    }
     return {
 
         init: () => {
@@ -51,39 +56,93 @@ const ConfigAPI = (filenames) => {
         },
         push: (configName, configData) => {
             return new Promise((resolve, reject) => {
-                this.config[configName].push(configData); //add data to array
-                writeFile(configName).then(resolve(`PUSH: Added data to ${configName}`)).catch(error => {
-                    this.config[configName].pop(); //remove added data from this.config[configName]
-                    reject(`ERROR: Can't save configuration to file. Reason: \r\n${error}`);
-                });
+                let resolveMsg = `Data to ${configName} pushed`;
+                //make serialize for ID
+                if (+configData['id'] !== this.config[configName].length) {
+                    resolveMsg = `Data to ${configName} pushed. ID changed: ${configData['id']} => ${this.config[configName].length}`
+                    configData['id'] = this.config[configName].length;
+                }
+                this.config[configName].push(configData);//add data to array
+                writeFile(configName)
+                    .then(resolve(resolveMsg)
+                        .catch(error => {
+                                this.config[configName].pop(); //remove added data from this.config[configName]
+                                reject(`ERROR: Can't save configuration to file. Reason: \r\n${error}`);
+                            }
+                        )
+                    )
             })
         },
         update: (configName, configData) => {
+            return new Promise((resolve, reject) => {
+                let resolveMsg = `Data of ${configName} updated.`;
+                let backup = this.config[configName];
+                if (configData.hasOwnProperty('id')) {
+                    if (this.config[configName][configData['id']]) {
+                        //prevent ID changing
+                        // if (+configData['id'] !== this.config[configName][configData['id']]['id']) {
+                        //     resolveMsg += `ID changed: ID=${configData['id']} => `;
+                        //     configData['id'] = this.config[configName][configData['id']]['id'];
+                        //     resolveMsg += configData['id'];
+                        // }
+                        this.config[configName][configData['id']] = configData;
+                    }
+                    else {
+                        reject(`Can't find ${configName} element with ID '${configData['id']}'`);
+                        return;
+                    }
+                }
+                else {
+                    if (this.config[configName]) {
+                        this.config[configName] = configData;
+                    }
+                    else {
+                        reject(`Can't find ${configName}`);
+                        return;
+                    }
 
-            if (configData.hasOwnProperty('id')) {
-                this.config[configName][configData['id']] = configData;
-                log(`CONFIG UPDATE: ${configName} id: ${configData['id']}`);
-            }
-            else {
-                this.config[configName] = configData;
-                log(`CONFIG UPDATE: ${configName}`);
-            }
-
-            return writeFile(configName);
+                }
+                writeFile(configName)
+                    .then(resolve(resolveMsg))
+                    .catch(error => {
+                        this.config[configName] = backup;
+                        reject(`ERROR: Can't save configuration to file. Reason: \r\n${error}`);
+                    });
+            });
 
         },
         getConfig: (configName, id) => {
-            if (!configName) return this.config;
             return new Promise((resolve, reject) => {
-                readFile(CONFIGPATH + configName + '.json').then(() => {
-                    if (id) resolve(this.config[configName][Number(id)]);
-                    else resolve(this.config[configName]);
-                }).catch(err => reject(err))
+                if (!configName) {
+                    resolve(this.config)
+                }
+                else {
+                    readFile(CONFIGPATH + configName + '.json').then(() => {
+                        if (id) {
+                            this.config[configName][Number(id)] ?
+                                resolve(this.config[configName][Number(id)])
+                                : reject(`Can't find ID ${id} of ${configName}`);
+                        }
+                        else resolve(this.config[configName]);
+                    }).catch(err => reject(err))
+                }
+
             })
         },
         eraseConfigElementByID: (configName, id) => {
-            this.config[configName][id] = null;
-            return writeFile(configName);
+            return new Promise((resolve, reject) => {
+                let backup = this.config[configName];
+                this.config[configName].splice(+id, 1);
+                recalcID(configName);
+                writeFile(configName)
+                    .then(resolve(`Data with ID ${id} deleted. All IDs recalculated`))
+                    .catch(error => {
+                        this.config[configName] = backup;
+                        reject(`ERROR: Can't save configuration to file. Reason: \r\n${error}`);
+                    });
+            })
+
+
         },
 
     }
