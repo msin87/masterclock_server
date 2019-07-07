@@ -1,6 +1,5 @@
 const fs = require('fs');
 const CONFIGPATH = './config/';
-const log = console.log;
 const ConfigAPI = (filenames) => {
     this.config = this.config ? this.config : {};
     let readFile = (fileName) => {
@@ -46,7 +45,7 @@ const ConfigAPI = (filenames) => {
         for (let i = 0; i < this.config[configName].length; i++) {
             this.config[configName][i]['id'] = i;
         }
-    }
+    };
     return {
 
         init: () => {
@@ -59,7 +58,7 @@ const ConfigAPI = (filenames) => {
                 let resolveMsg = `Data to ${configName} pushed`;
                 //make serialize for ID
                 if (+configData['id'] !== this.config[configName].length) {
-                    resolveMsg = `Data to ${configName} pushed. ID changed: ${configData['id']} => ${this.config[configName].length}`
+                    resolveMsg = `Data to ${configName} pushed. ID changed: ${configData['id']} => ${this.config[configName].length}`;
                     configData['id'] = this.config[configName].length;
                 }
                 this.config[configName].push(configData);//add data to array
@@ -67,7 +66,7 @@ const ConfigAPI = (filenames) => {
                     .then(resolve(resolveMsg)
                         .catch(error => {
                                 this.config[configName].pop(); //remove added data from this.config[configName]
-                                reject(`ERROR: Can't save configuration to file. Reason: \r\n${error}`);
+                                reject({code: 500, msg: `ERROR: Can't save configuration to file. Reason: \r\n${error}`});
                             }
                         )
                     )
@@ -88,7 +87,7 @@ const ConfigAPI = (filenames) => {
                         this.config[configName][configData['id']] = configData;
                     }
                     else {
-                        reject(`Can't find ${configName} element with ID '${configData['id']}'`);
+                        reject({code: 404, msg:`Can't find ${configName} element with ID '${configData['id']}'`});
                         return;
                     }
                 }
@@ -97,7 +96,7 @@ const ConfigAPI = (filenames) => {
                         this.config[configName] = configData;
                     }
                     else {
-                        reject(`Can't find ${configName}`);
+                        reject({code: 404, msg: `Can't find ${configName}`});
                         return;
                     }
 
@@ -106,30 +105,51 @@ const ConfigAPI = (filenames) => {
                     .then(resolve(resolveMsg))
                     .catch(error => {
                         this.config[configName] = backup;
-                        reject(`ERROR: Can't save configuration to file. Reason: \r\n${error}`);
+                        reject({code: 500, msg: `ERROR: Can't save configuration to file. Reason: \r\n${error}`});
                     });
             });
 
         },
-        getConfig: (configName, id) => {
+        readConfig: (configName, id) => {
             return new Promise((resolve, reject) => {
                 if (!configName) {
                     resolve(this.config)
                 }
                 else {
-                    readFile(CONFIGPATH + configName + '.json').then(() => {
-                        if (id) {
-                            this.config[configName][Number(id)] ?
-                                resolve(this.config[configName][Number(id)])
-                                : reject(`Can't find ID ${id} of ${configName}`);
-                        }
-                        else resolve(this.config[configName]);
-                    }).catch(err => reject(err))
+                    readFile(CONFIGPATH + configName + '.json')
+                        .then(() => {
+                            if (id) {
+                                //check exist
+                                if (this.config[configName][Number(id)]) {
+                                    resolve(this.config[configName][Number(id)])
+                                }
+                                else {
+                                    let msg = `Can't find ID ${id} of ${configName}`;
+                                    console.log(msg);
+                                    reject({code: 404, msg});
+                                }
+
+                            }
+                            else {
+                                if (this.config[configName]) {
+                                    resolve(this.config[configName])
+                                }
+                                else {
+                                    let msg = `Can't find ${configName}`;
+                                    console.log(msg);
+                                    reject({code: 404, msg: `Can't find ${configName}`})
+                                }
+                            }
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            reject({code: 500, err})
+                        })
                 }
 
             })
         },
-        eraseConfigElementByID: (configName, id) => {
+        delete: (configName, id) => {
             return new Promise((resolve, reject) => {
                 let backup = this.config[configName];
                 this.config[configName].splice(+id, 1);
@@ -138,7 +158,7 @@ const ConfigAPI = (filenames) => {
                     .then(resolve(`Data with ID ${id} deleted. All IDs recalculated`))
                     .catch(error => {
                         this.config[configName] = backup;
-                        reject(`ERROR: Can't save configuration to file. Reason: \r\n${error}`);
+                        reject({code: 500, msg:`ERROR: Can't save configuration to file. Reason: \r\n${error}`});
                     });
             })
 

@@ -25,17 +25,11 @@
   },
   {
     "id": 2,
-    "eventType": "relay",
-    "status": "waiting",
-    "date": 1559645774112,
+    "eventType": "alarm",
+    "status": "suspend",
+    "date": "MON_FRI",
     "duration": null,
-    "sensor": {
-      "id": 3,
-      "trigger": [
-        205,
-        230
-      ],
-      "units": "°C"
-    }
+    "repeat": null,
+    "sound": "school_bell.mp3"
   }
 ]

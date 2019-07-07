@@ -1,14 +1,6 @@
 [
   {
     "id": 0,
-    "time": "16:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "70%",
-    "dts": false
-  },
-  {
-    "id": 1,
     "time": "11:00",
     "zone": "Europe/Moscow+3",
     "status": "STOP",
@@ -16,11 +8,19 @@
     "dts": false
   },
   {
-    "id": 2,
+    "id": 1,
     "time": "12:00",
     "zone": "Europe/Moscow+3",
     "status": "RUN",
     "load": "20%",
+    "dts": false
+  },
+  {
+    "id": 2,
+    "time": "11:00",
+    "zone": "Europe/Moscow+3",
+    "status": "STOP",
+    "load": "29%",
     "dts": false
   },
   {
@@ -29,86 +29,6 @@
     "zone": "Europe/Moscow+3",
     "status": "RUN",
     "load": "22%",
-    "dts": false
-  },
-  {
-    "id": 4,
-    "time": "11:00",
-    "zone": "Europe/Moscow+3",
-    "status": "STOP",
-    "load": "29%",
-    "dts": false
-  },
-  {
-    "id": 5,
-    "time": "12:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "22%",
-    "dts": false
-  },
-  {
-    "id": 6,
-    "time": "16:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "70%",
-    "dts": false
-  },
-  {
-    "id": 7,
-    "time": "16:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "70%",
-    "dts": false
-  },
-  {
-    "id": 8,
-    "time": "16:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "70%",
-    "dts": false
-  },
-  {
-    "id": 9,
-    "time": "16:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "70%",
-    "dts": false
-  },
-  {
-    "id": 10,
-    "time": "16:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "70%",
-    "dts": false
-  },
-  {
-    "id": 11,
-    "time": "13:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "70%",
-    "dts": false
-  },
-  {
-    "id": 12,
-    "time": "16:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "70%",
-    "dts": false
-  },
-  {
-    "id": 13,
-    "time": "11:00",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "70%",
     "dts": false
   }
 ]
