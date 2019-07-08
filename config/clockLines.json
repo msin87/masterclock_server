@@ -1,14 +1,5 @@
 [
   {
-    "id": 0,
-    "time": "11:00",
-    "zone": "Europe/Moscow+3",
-    "status": "STOP",
-    "load": "60%",
-    "dts": false
-  },
-  {
-    "id": 1,
     "time": "12:00",
     "zone": "Europe/Moscow+3",
     "status": "RUN",
@@ -16,7 +7,6 @@
     "dts": false
   },
   {
-    "id": 2,
     "time": "11:00",
     "zone": "Europe/Moscow+3",
     "status": "STOP",
@@ -24,8 +14,14 @@
     "dts": false
   },
   {
-    "id": 3,
-    "time": "12:00",
+    "time": "13:34",
+    "zone": "Europe/Moscow+3",
+    "status": "RUN",
+    "load": "22%",
+    "dts": false
+  },
+  {
+    "time": "23:34",
     "zone": "Europe/Moscow+3",
     "status": "RUN",
     "load": "22%",

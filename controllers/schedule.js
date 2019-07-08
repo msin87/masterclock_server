@@ -16,7 +16,7 @@ exports.push = (req, res) => {
         .catch(err => res.status(err.code).send(err.msg));
 };
 exports.update = (req, res) => {
-    SystemConfig.update(req.body)
+    SystemConfig.update(req.body, req.params.id)
         .then(msg => res.send(msg))
         .catch(err => res.status(err.code).send(err.msg))
 };

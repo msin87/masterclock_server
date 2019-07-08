@@ -1,6 +1,5 @@
 [
   {
-    "id": 0,
     "eventType": "alarm",
     "status": "suspend",
     "date": "MON_FRI",
@@ -9,7 +8,6 @@
     "sound": "school_bell.mp3"
   },
   {
-    "id": 1,
     "eventType": "relay",
     "status": "waiting",
     "date": 1559645774112,
@@ -24,8 +22,23 @@
     }
   },
   {
-    "id": 2,
     "eventType": "alarm",
+    "status": "suspend",
+    "date": "MON_FRI",
+    "duration": null,
+    "repeat": null,
+    "sound": "school_bell.mp3"
+  },
+  {
+    "eventType": "BABAH",
+    "status": "suspend",
+    "date": "MON_FRI",
+    "duration": null,
+    "repeat": null,
+    "sound": "school_bell.mp3"
+  },
+  {
+    "eventType": "BABAH2",
     "status": "suspend",
     "date": "MON_FRI",
     "duration": null,

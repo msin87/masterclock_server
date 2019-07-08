@@ -1,6 +1,8 @@
-{
-  "displayOff_s": 90,
-  "password": 12345,
-  "language": "ru",
-  "mainCurrentLimit": 4000
-}
+[
+  {
+    "displayOff_s": 20,
+    "password": 12345,
+    "language": "ru",
+    "mainCurrentLimit": 4000
+  }
+]
