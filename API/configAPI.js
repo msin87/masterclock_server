@@ -1,50 +1,54 @@
 const fs = require('fs');
 const CONFIGPATH = './config/';
-const ConfigAPI = (filenames) => {
-        this.config = this.config || {};
-        let readFile = (fileName) => {
-            return new Promise((resolve, reject) => {
-                fs.readFile(fileName, 'utf8', (err, data) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        let configName = fileName.match(/(?:\.\/config\/)(\w*)/)[1];
-                        this.config[configName] = JSON.parse(data);
-                        resolve(this.config);
-                    }
-                })
-            })
-        };
-        let writeFile = (filename) => {
-            return new Promise((resolve, reject) => {
-                fs.writeFile(CONFIGPATH + filename + '.json', JSON.stringify(this.config[filename], null, 2), 'utf8', error => {
-                    if (error) {
-                        reject(error);
-                    }
-                    resolve(`WRITE FILE: ${filename}.json`);
-                });
-            })
-        };
-        return {
-
-            init: () => {
-                for (let f of filenames) {
-                    readFile(CONFIGPATH + f + '.json');
+const JsonIO = filename => ({
+    readJson: () => {
+        return new Promise((resolve, reject) => {
+            fs.readFile(filename, 'utf8', (err, data) => {
+                if (err) {
+                    reject(err);
                 }
-            },
-            push: (configName, configData) => {
+                else {
+                    Array.isArray(data)?resolve(JSON.parse(data)):reject(`JsonIO: Error! The configuration in '${filename}' is not an array type!`);
+                }
+            })
+        })
+    },
+    writeJson: json => {
+        return new Promise((resolve, reject) => {
+            fs.writeFile(CONFIGPATH + filename + '.json', JSON.stringify(json, null, 2), 'utf8', error => {
+                if (error) {
+                    reject(error);
+                }
+                resolve(`WRITE FILE: ${filename}.json`);
+            });
+        })
+    }
+});
+const ConfigAPI = (configName) => {
+        let jIO = JsonIO(configName),
+            config = [];
+        jIO.readJson()
+            .then(data => {
+                console.log(`JsonIO: Read configuration '${configName}'.json complete`)
+                config = data;
+            })
+            .catch(err => {
+                console.log(`JsonIO: Error! Can't read configuration '${configName}'.json \r\n ${err}`);
+                process.exit(1);
+            });
+        return {
+            push: (configData) => {
                 return new Promise((resolve, reject) => {
-                        let msg = `POST: Data to ${configName} pushed with ID = '${this.config[configName].length}'`;
-                        this.config[configName].push(configData);//add data to array
-                        writeFile(configName)
+                        let msg = `POST: Data to ${configName} pushed with ID = '${config.length}'`;
+                        config.push(configData);//add data to array
+                        jIO.writeJson(config)
                             .then(() => {
                                 console.log(msg);
                                 resolve(msg);
                             })
                             .catch(error => {
                                     msg = `POST: Error! Can't save configuration to file. Reason: \r\n${error}`;
-                                    this.config[configName].pop(); //remove added data from this.config[configName]
+                                    config.pop(); //remove added data from config[configName]
                                     console.log(msg);
                                     reject({code: 500, msg});
                                 }
@@ -52,26 +56,26 @@ const ConfigAPI = (filenames) => {
                     }
                 )
             },
-            update: (configName, configData, id = 0) => {
+            update: (configData, id = 0) => {
                 return new Promise((resolve, reject) => {
-                    let backup = this.config[configName];
+                    let backup = config;
                     let msg = `PUT: Error! Can't find ${configName} element with ID '${+id}'`;
-                    if (this.config[configName][+id]) {
-                        this.config[configName][+id] = configData;
+                    if (config[+id]) {
+                        config[+id] = configData;
                     }
                     else {
                         reject({code: 404, msg});
                         console.log(msg);
                         return;
                     }
-                    writeFile(configName)
+                    jIO.writeJson(config)
                         .then(() => {
                             msg = `PUT: Data of ${configName} updated.`;
                             console.log(msg);
                             resolve(msg)
                         })
                         .catch(error => {
-                            this.config[configName] = backup;
+                            config = backup;
                             msg = `PUT: Error! Can't save configuration to file. Reason: \r\n${error}`;
                             console.log(msg);
                             reject({code: 500, msg});
@@ -80,62 +84,56 @@ const ConfigAPI = (filenames) => {
 
             },
             readConfig:
-                (configName, id) => {
+                (id) => {
                     return new Promise((resolve, reject) => {
                         let msg = `GET: ${configName} with ID = '${id}'`;
-                        if (!configName) {
-                            resolve(this.config)
-                        }
-                        else {
-                            readFile(CONFIGPATH + configName + '.json')
-                                .then(() => {
-                                    if (id) {
-                                        //check exist
-                                        if (this.config[configName][Number(id)]) {
-                                            console.log(msg);
-                                            resolve(this.config[configName][Number(id)])
-                                        }
-                                        else {
-                                            msg = `GET: Error! Can't find ${configName} with ID = '${id}'`;
-                                            console.log(msg);
-                                            reject({code: 404, msg});
-                                        }
-
+                        jIO.readJson()
+                            .then(() => {
+                                if (id) {
+                                    //check exist
+                                    if (config[Number(id)]) {
+                                        console.log(msg);
+                                        resolve(config[Number(id)])
                                     }
                                     else {
-                                        if (this.config[configName]) {
-                                            msg = `GET: ${configName}`;
-                                            console.log(msg);
-                                            resolve(this.config[configName])
-                                        }
-                                        else {
-                                            let msg = `GET: Can't find ${configName}`;
-                                            console.log(msg);
-                                            reject({code: 404, msg})
-                                        }
+                                        msg = `GET: Error! Can't find ${configName} with ID = '${id}'`;
+                                        console.log(msg);
+                                        reject({code: 404, msg});
                                     }
-                                })
-                                .catch(err => {
-                                    console.log(err);
-                                    reject({code: 500, err})
-                                })
-                        }
 
+                                }
+                                else {
+                                    if (config) {
+                                        msg = `GET: ${configName}`;
+                                        console.log(msg);
+                                        resolve(config)
+                                    }
+                                    else {
+                                        let msg = `GET: Can't find ${configName}`;
+                                        console.log(msg);
+                                        reject({code: 404, msg})
+                                    }
+                                }
+                            })
+                            .catch(err => {
+                                console.log(err);
+                                reject({code: 500, err})
+                            })
                     })
                 },
             delete:
-                (configName, id) => {
+                (id) => {
                     return new Promise((resolve, reject) => {
-                        let backup = this.config[configName];
+                        let backup = config;
                         let msg = `DELETE: Data with ID ${id} deleted. All IDs recalculated`;
-                        this.config[configName].splice(+id, 1);
-                        writeFile(configName)
+                        config.splice(+id, 1);
+                        jIO.writeJson(configName)
                             .then(() => {
                                 resolve(msg);
                                 console.log(msg)
                             })
                             .catch(error => {
-                                this.config[configName] = backup;
+                                config = backup;
                                 msg = `DELETE: Error! Can't save configuration to file. Reason: \r\n${error}`;
                                 console.log(msg);
                                 reject({code: 500, msg});
