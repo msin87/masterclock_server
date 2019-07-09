@@ -1,30 +1,23 @@
 [
   {
-    "time": "12:00",
+    "time": "13:46",
     "zone": "Europe/Moscow+3",
     "status": "RUN",
     "load": "20%",
     "dts": false
   },
   {
-    "time": "11:00",
+    "time": "12:46",
     "zone": "Europe/Moscow+3",
-    "status": "STOP",
-    "load": "29%",
+    "status": "RUN",
+    "load": "20%",
     "dts": false
   },
   {
-    "time": "13:34",
+    "time": "09:46",
     "zone": "Europe/Moscow+3",
     "status": "RUN",
-    "load": "22%",
-    "dts": false
-  },
-  {
-    "time": "23:34",
-    "zone": "Europe/Moscow+3",
-    "status": "RUN",
-    "load": "22%",
+    "load": "20%",
     "dts": false
   }
 ]

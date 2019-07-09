@@ -3,12 +3,13 @@ const CONFIGPATH = './config/';
 const JsonIO = filename => ({
     readJson: () => {
         return new Promise((resolve, reject) => {
-            fs.readFile(filename, 'utf8', (err, data) => {
+            fs.readFile(CONFIGPATH+filename+'.json', 'utf8', (err, data) => {
                 if (err) {
                     reject(err);
                 }
                 else {
-                    Array.isArray(data)?resolve(JSON.parse(data)):reject(`JsonIO: Error! The configuration in '${filename}' is not an array type!`);
+                    let jData=JSON.parse(data);
+                    Array.isArray(jData)?resolve(jData):reject(`JsonIO: Error! The configuration in '${filename}.json' is not an array type!`);
                 }
             })
         })
@@ -19,7 +20,7 @@ const JsonIO = filename => ({
                 if (error) {
                     reject(error);
                 }
-                resolve(`WRITE FILE: ${filename}.json`);
+                resolve(`JsonIO: Write file ${filename}.json`);
             });
         })
     }
@@ -29,11 +30,11 @@ const ConfigAPI = (configName) => {
             config = [];
         jIO.readJson()
             .then(data => {
-                console.log(`JsonIO: Read configuration '${configName}'.json complete`)
+                console.log(`JsonIO: Init. Read configuration '${configName}.json' complete`)
                 config = data;
             })
             .catch(err => {
-                console.log(`JsonIO: Error! Can't read configuration '${configName}'.json \r\n ${err}`);
+                console.log(`JsonIO: Init. Error! Can't read configuration '${configName}'.json \r\n ${err}`);
                 process.exit(1);
             });
         return {
@@ -96,7 +97,7 @@ const ConfigAPI = (configName) => {
                                         resolve(config[Number(id)])
                                     }
                                     else {
-                                        msg = `GET: Error! Can't find ${configName} with ID = '${id}'`;
+                                        msg = `GET: Error! Can't find '${configName}' with ID = '${id}'`;
                                         console.log(msg);
                                         reject({code: 404, msg});
                                     }
@@ -127,7 +128,7 @@ const ConfigAPI = (configName) => {
                         let backup = config;
                         let msg = `DELETE: Data with ID ${id} deleted. All IDs recalculated`;
                         config.splice(+id, 1);
-                        jIO.writeJson(configName)
+                        jIO.writeJson(config)
                             .then(() => {
                                 resolve(msg);
                                 console.log(msg)
@@ -146,4 +147,4 @@ const ConfigAPI = (configName) => {
         }
     }
 ;
-module.exports.ConfigAPI = ConfigAPI;
+module.exports = ConfigAPI;
