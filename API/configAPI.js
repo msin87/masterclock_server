@@ -3,13 +3,13 @@ const CONFIGPATH = './config/';
 const JsonIO = filename => ({
     readJson: () => {
         return new Promise((resolve, reject) => {
-            fs.readFile(CONFIGPATH+filename+'.json', 'utf8', (err, data) => {
+            fs.readFile(CONFIGPATH + filename + '.json', 'utf8', (err, data) => {
                 if (err) {
                     reject(err);
                 }
                 else {
-                    let jData=JSON.parse(data);
-                    Array.isArray(jData)?resolve(jData):reject(`JsonIO: Error! The configuration in '${filename}.json' is not an array type!`);
+                    let jData = JSON.parse(data);
+                    Array.isArray(jData) ? resolve(jData) : reject(`JsonIO: Error! The configuration in '${filename}.json' is not an array type!`);
                 }
             })
         })
@@ -30,7 +30,7 @@ const ConfigAPI = (configName) => {
             config = [];
         jIO.readJson()
             .then(data => {
-                console.log(`JsonIO: Init. Read configuration '${configName}.json' complete`)
+                console.log(`JsonIO: Init. Read configuration '${configName}.json' complete`);
                 config = data;
             })
             .catch(err => {
@@ -84,37 +84,15 @@ const ConfigAPI = (configName) => {
                 });
 
             },
-            readConfig:
-                (id) => {
+            all:
+                () => {
                     return new Promise((resolve, reject) => {
-                        let msg = `GET: ${configName} with ID = '${id}'`;
+                        let msg = `GET: ${configName}`;
                         jIO.readJson()
                             .then(() => {
-                                if (id) {
-                                    //check exist
-                                    if (config[Number(id)]) {
-                                        console.log(msg);
-                                        resolve(config[Number(id)])
-                                    }
-                                    else {
-                                        msg = `GET: Error! Can't find '${configName}' with ID = '${id}'`;
-                                        console.log(msg);
-                                        reject({code: 404, msg});
-                                    }
-
-                                }
-                                else {
-                                    if (config) {
-                                        msg = `GET: ${configName}`;
-                                        console.log(msg);
-                                        resolve(config)
-                                    }
-                                    else {
-                                        let msg = `GET: Can't find ${configName}`;
-                                        console.log(msg);
-                                        reject({code: 404, msg})
-                                    }
-                                }
+                                msg = `GET: ${configName}`;
+                                console.log(msg);
+                                resolve(config)
                             })
                             .catch(err => {
                                 console.log(err);
@@ -122,6 +100,24 @@ const ConfigAPI = (configName) => {
                             })
                     })
                 },
+            findById: (id = 0) => {
+                return new Promise((resolve, reject) => {
+                    let msg = `GET: ${configName} with ID = '${id}'`;
+                    jIO.readJson()
+                        .then(() => {
+                            //check exist
+                            if (config[Number(id)]) {
+                                console.log(msg);
+                                resolve(config[Number(id)])
+                            }
+                            else {
+                                msg = `GET: Error! Can't find '${configName}' with ID = '${id}'`;
+                                console.log(msg);
+                                reject({code: 404, msg});
+                            }
+                        })
+                })
+            },
             delete:
                 (id) => {
                     return new Promise((resolve, reject) => {
@@ -147,4 +143,6 @@ const ConfigAPI = (configName) => {
         }
     }
 ;
+
+
 module.exports = ConfigAPI;
