@@ -1,5 +1,5 @@
 const express = require('express');
-const controller = require('../controllers/clockLines');
+const controller = require('../config/controllers/clockLines');
 
 const router = express.Router();
 

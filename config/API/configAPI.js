@@ -44,41 +44,42 @@ const ConfigAPI = (configName) => {
                         config.push(configData);//add data to array
                         jIO.writeJson(config)
                             .then(() => {
-                                console.log(msg);
                                 resolve(msg);
                             })
                             .catch(error => {
                                     msg = `POST: Error! Can't save configuration to file. Reason: \r\n${error}`;
                                     config.pop(); //remove added data from config[configName]
-                                    console.log(msg);
                                     reject({code: 500, msg});
                                 }
                             )
                     }
                 )
             },
-            update: (configData, id = 0) => {
+            update: (configData, id) => {
                 return new Promise((resolve, reject) => {
                     let backup = config;
                     let msg = `PUT: Error! Can't find ${configName} element with ID '${+id}'`;
-                    if (config[+id]) {
-                        config[+id] = configData;
+                    if (id) {
+                        if (config[+id]) {
+                            msg = `PUT: Data of '${configName}' with ID = ${id} updated.`;
+                            config[+id] = configData;
+                        }
+                        else {
+                            reject({code: 404, msg});
+                            return;
+                        }
                     }
                     else {
-                        reject({code: 404, msg});
-                        console.log(msg);
-                        return;
+                        msg = `PUT: All data of '${configName}' updated.`;
+                        config = configData;
                     }
                     jIO.writeJson(config)
                         .then(() => {
-                            msg = `PUT: Data of ${configName} updated.`;
-                            console.log(msg);
                             resolve(msg)
                         })
                         .catch(error => {
                             config = backup;
                             msg = `PUT: Error! Can't save configuration to file. Reason: \r\n${error}`;
-                            console.log(msg);
                             reject({code: 500, msg});
                         });
                 });
@@ -91,11 +92,9 @@ const ConfigAPI = (configName) => {
                         jIO.readJson()
                             .then(() => {
                                 msg = `GET: ${configName}`;
-                                console.log(msg);
                                 resolve(config)
                             })
                             .catch(err => {
-                                console.log(err);
                                 reject({code: 500, err})
                             })
                     })
@@ -107,12 +106,10 @@ const ConfigAPI = (configName) => {
                         .then(() => {
                             //check exist
                             if (config[Number(id)]) {
-                                console.log(msg);
                                 resolve(config[Number(id)])
                             }
                             else {
                                 msg = `GET: Error! Can't find '${configName}' with ID = '${id}'`;
-                                console.log(msg);
                                 reject({code: 404, msg});
                             }
                         })
@@ -127,12 +124,10 @@ const ConfigAPI = (configName) => {
                         jIO.writeJson(config)
                             .then(() => {
                                 resolve(msg);
-                                console.log(msg)
                             })
                             .catch(error => {
                                 config = backup;
                                 msg = `DELETE: Error! Can't save configuration to file. Reason: \r\n${error}`;
-                                console.log(msg);
                                 reject({code: 500, msg});
                             });
                     })
