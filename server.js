@@ -24,7 +24,7 @@ setInterval(async () => {
     //     ClockLinesEvents.emit('addMinute');
     // }
     // this.oldMinutes = date.getMinutes();
-    console.log(await nvRAM_API.writeLinesTime(['12:30','13:45']));
+    console.log(await nvRAM_API.readLinesTime());
 
-}, 5000);
+}, 1000);
 es.listen(3001, () => console.log('Express started at port 3001! Folder: ' + __dirname));
