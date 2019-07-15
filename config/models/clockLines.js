@@ -37,8 +37,15 @@ module.exports.push = async (newData) => {
 };
 module.exports.update = async (newData, id) => {
     try {
-        let allTime = await NVRAM.readLinesTime();
-        allTime[id] = newData['time'];
+        let allTime;
+        if (id) {
+            allTime = await NVRAM.readLinesTime();
+            allTime[id] = newData['time'];
+        }
+        else
+        {
+            allTime=newData;
+        }
         await NVRAM.writeLinesTime(allTime);
         for (let d of newData)
         {

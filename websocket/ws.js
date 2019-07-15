@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const clockLinesActions = require('../actions/clockLines');
+const clockLinesEmitter = require('../Events/clockLinesEmitter');
 
 
 const wss = new WebSocket.Server({port: 3002});
@@ -9,7 +9,7 @@ wss.on('connection', (ws) => {
     ws.on('message', (message) =>
         console.log(message)
     )
-    clockLinesActions.startMinuteTick(ws);
+    clockLinesEmitter.startMinuteTick(ws);
 });
 
 
