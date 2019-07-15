@@ -90,9 +90,9 @@ const ConfigAPI = (configName) => {
                     return new Promise((resolve, reject) => {
                         let msg = `GET: ${configName}`;
                         jIO.readJson()
-                            .then(() => {
+                            .then((data) => {
                                 msg = `GET: ${configName}`;
-                                resolve(config)
+                                resolve(data)
                             })
                             .catch(err => {
                                 reject({code: 500, err})
@@ -103,10 +103,10 @@ const ConfigAPI = (configName) => {
                 return new Promise((resolve, reject) => {
                     let msg = `GET: ${configName} with ID = '${id}'`;
                     jIO.readJson()
-                        .then(() => {
+                        .then((data) => {
                             //check exist
-                            if (config[Number(id)]) {
-                                resolve(config[Number(id)])
+                            if (data[Number(id)]) {
+                                resolve(data[Number(id)])
                             }
                             else {
                                 msg = `GET: Error! Can't find '${configName}' with ID = '${id}'`;

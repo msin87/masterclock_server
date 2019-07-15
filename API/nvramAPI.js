@@ -1,7 +1,7 @@
 const HEX_PREFIX='\\\\x';
 const nvram_IO = {
     write: async data => console.log(data),
-    read: async () => '0005011002150320042505300635'
+    read: async () => '0005011002150320'
 };
 
 const nvramAPI = {

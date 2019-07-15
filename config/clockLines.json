@@ -3,24 +3,28 @@
     "zone": "Europe/Moscow+3",
     "status": "RUN",
     "load": "20%",
-    "dts": false
+    "dts": false,
+    "time": "00:06"
   },
   {
     "zone": "Europe/Moscow+3",
     "status": "STOP",
     "load": "29%",
-    "dts": false
+    "dts": false,
+    "time": "01:10"
   },
   {
     "zone": "Europe/Moscow+3",
     "status": "RUN",
     "load": "22%",
-    "dts": false
+    "dts": false,
+    "time": "02:16"
   },
   {
     "zone": "Europe/Moscow+3",
     "status": "STOP",
-    "load": "29%",
-    "dts": false
+    "load": "24%",
+    "dts": false,
+    "time": "03:20"
   }
 ]

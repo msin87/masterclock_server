@@ -3,7 +3,7 @@ const controller = require('../config/controllers/system');
 
 const router = express.Router();
 
-router.get('/config/system', controller['all']);
-router.put('/config/system', controller['update']);
+router.get('/system', controller['all']);
+router.put('/system', controller['update']);
 
 module.exports = router;
