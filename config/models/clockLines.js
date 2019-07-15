@@ -40,7 +40,10 @@ module.exports.update = async (newData, id) => {
         let allTime = await NVRAM.readLinesTime();
         allTime[id] = newData['time'];
         await NVRAM.writeLinesTime(allTime);
-        delete newData['time'];
+        for (let d of newData)
+        {
+            delete d['time'];
+        }
         return model.update(newData, id);
     }
     catch (err) {

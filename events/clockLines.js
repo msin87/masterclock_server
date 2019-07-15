@@ -15,9 +15,11 @@ emitter.on('addMinute', async (ws) => {
             }
             else return line;
         });
-        await ClockLinesModel.update(newLines);
         if (ws)
             ws.send(JSON.stringify(newLines));
+
+        await ClockLinesModel.update(newLines);
+
 
     }
     catch (err) {
