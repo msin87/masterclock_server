@@ -1,10 +1,9 @@
 const Emitter = require('events');
 const ClockLinesModel = require('../config/models/clockLines');
 const MINUTE = 60 * 1000;
-const EVENT_LOOP_TIME = 1000;
 let emitter = new Emitter();
 
-emitter.on('addMinute', async () => {
+emitter.on('addMinute', async (ws) => {
     try {
         let lines = await ClockLinesModel.all();
         let newLines = lines.map((line, id) => {
@@ -17,32 +16,14 @@ emitter.on('addMinute', async () => {
             else return line;
         });
         await ClockLinesModel.update(newLines);
+        if (ws)
+            ws.send(JSON.stringify(newLines));
+
     }
     catch (err) {
         console.log(err);
     }
 });
 
-let Events = {
-    startMinuteTick: () => {
-        if (!this.timer) {
-            this.timer = setInterval(() => {
-                let date = new Date();
-                if (this.oldMinutes !== undefined && (date.getMinutes() !== this.oldMinutes)) {
-                    emitter.emit('addMinute');
-                }
-                this.oldMinutes = date.getMinutes();
-            }, EVENT_LOOP_TIME);
-            console.log('EVENT: Success! Minute Tick started')
-        }
-        else
-        {
-            console.log('EVENT: Warning! Minute Tick is already started')
-        }
-    },
-    stopMinuteTick: () => {
-        if (this.timer) clearInterval(this.timer);
-        console.log('EVENT: Success! Minute Tick stopped')
-    }
-};
-module.exports = Events;
+
+module.exports = emitter;
