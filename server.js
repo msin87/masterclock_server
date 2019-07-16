@@ -5,7 +5,7 @@ const clockLinesRouter = require('./routes/clockLines');
 const systemConfigRouter = require('./routes/system');
 const scheduleRouter = require('./routes/schedule');
 const ClockLinesActions = require('./Events/clockLinesEmitter');
-const ws=require('./websocket/ws');
+const ws=require('./websocket/websocket');
 es.use(bodyParser.json());
 es.use(bodyParser.urlencoded(({extended: true})));
 es.use(function (req, res, next) {

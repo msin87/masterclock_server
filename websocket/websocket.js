@@ -3,6 +3,12 @@ const clockLinesEmitter = require('../Events/clockLinesEmitter');
 
 
 const wss = new WebSocket.Server({port: 3002});
+const Listener = () => {
+    this.Handlers = {
+        MINUTE_TICK: [],
+
+    }
+}
 wss.on('connection', (ws) => {
     console.log(`WEBSOCKET: Success connection!`);
 
