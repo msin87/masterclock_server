@@ -1,5 +1,5 @@
 const HEX_PREFIX = '\\\\x';
-let dataEmulated = '0009200921092209';
+let dataEmulated = '0356200921092209';
 const nvram_IO = {
     write: async data => {
         return dataEmulated = data
