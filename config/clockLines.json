@@ -1,24 +1,24 @@
 [
   {
-    "zone": "Europe/Moscow+3",
+    "zone": "Europe/Moscow+03",
     "status": "RUN",
     "load": "20%",
     "dts": false
   },
   {
-    "zone": "Europe/Moscow+3",
+    "zone": "Europe/Moscow+03",
     "status": "STOP",
     "load": "29%",
     "dts": false
   },
   {
-    "zone": "Europe/Moscow+3",
+    "zone": "Europe/Moscow+03",
     "status": "RUN",
     "load": "22%",
     "dts": false
   },
   {
-    "zone": "Europe/Moscow+3",
+    "zone": "Europe/Moscow+03",
     "status": "STOP",
     "load": "24%",
     "dts": false

@@ -36,6 +36,10 @@ module.exports.push = async (newData) => {
     }
 };
 module.exports.update = async (newData, id) => {
+    const withoutTime=newData.map(data=>{
+        const {time,...woTime} = data;
+        return woTime;
+    });
     try {
         let allTime;
         if (id) {
@@ -47,11 +51,8 @@ module.exports.update = async (newData, id) => {
             allTime=newData;
         }
         await NVRAM.writeLinesTime(allTime);
-        for (let d of newData)
-        {
-            delete d['time'];
-        }
-        return model.update(newData, id);
+
+        return model.update(withoutTime, id);
     }
     catch (err) {
         throw err;

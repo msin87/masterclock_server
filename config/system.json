@@ -3,6 +3,10 @@
     "displayOff_s": 40,
     "password": 12345,
     "language": "ru",
-    "mainCurrentLimit": 4000
+    "mainCurrentLimit": 4000,
+    "pulse": {
+      "width": 500,
+      "alternation": true
+    }
   }
 ]
