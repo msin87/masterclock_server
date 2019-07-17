@@ -2,47 +2,32 @@ const Actions = require('./clockLinesActions');
 const ClockLinesConfig = require('../config/models/clockLines');
 const SystemConfig = require('../config/models/system');
 const EVENT_LOOP_TIME = 3000;
-let getDiff = (time)=>{
-    /* from C library https://github.com/msin87/masterclock/blob/master/Src/lines.c
-    uint16_t get_sTimeLinesDiff(Lines* lineToCheck, uint8_t waitMinutes)
-{
-	int16_t diff_Min12 = 0;
-	uint8_t sHour12 = 0, lHour12 = 0;
-	int16_t sMinutes = 0, lMinutes = 0;
-	sHour12 = hoursToUTC(sTime.Hours, masterClock.daylightSaving->timeZone) % 12;
-	if (sHour12 == 0)
-	{
-		sHour12 = 12;
-	}
-	lHour12 = hoursToUTC(lineToCheck->Hours, lineToCheck->TimeZone) % 12;
-	if (lHour12 == 0)
-	{
-		lHour12 = 12;
-	}
-	diff_Min12 = sHour12 * 60 + sTime.Minutes - (lHour12 * 60 + lineToCheck->Minutes);
+let getDiff = (lineDate,waitMinutes=10)=>{
+    let correctedLineTime={hours:lineDate.getHours(), minutes:lineDate.getMinutes()};
+    let get12hFromDate = (time) => time.getUTCHours()%12 || 12;
+    let systemDate=new Date(Date.now());
+    let lineUTCHours12=get12hFromDate(lineDate);
+    let systemUTCHours12=get12hFromDate(systemDate);
+    let diffMin12=systemUTCHours12*60+systemDate.getUTCMinutes()-(lineUTCHours12*60+lineDate.getUTCMinutes());
 
-	if (diff_Min12 < -waitMinutes)
-	{
-
-		diff_Min12 = 720 + diff_Min12;
-	}
-	sMinutes = hoursToUTC(sTime.Hours, masterClock.daylightSaving->timeZone) * 60 + sTime.Minutes;
-	lMinutes = hoursToUTC(lineToCheck->Hours, lineToCheck->TimeZone) * 60 + lineToCheck->Minutes;
-	if ((sMinutes - lMinutes >= 720))
-	{
-		lineToCheck->Hours += 12;
-	}
-	else
-		if ((sMinutes - lMinutes) >= -720 && (sMinutes - lMinutes) < -waitMinutes)
-	{
-		lineToCheck->Hours += 12;
-		if (lineToCheck->Hours < 0) lineToCheck->Hours = -lineToCheck->Hours;
-	}
-	lineToCheck->Hours %= 24;
-	return diff_Min12;
-}
-     */
-
+    if (diffMin12<-waitMinutes)
+    {
+        diffMin12 = 720 + diffMin12;
+    }
+    let systemMinutes=systemDate.getUTCHours()*60+systemDate.getUTCMinutes();
+    let lineMinutes=lineDate.getUTCHours()*60+lineDate.getUTCMinutes();
+    if ((systemMinutes - lineMinutes >= 720))
+    {
+        correctedLineTime.hours += 12;
+    }
+    else
+    if ((systemMinutes - lineMinutes) >= -720 && (systemMinutes - lineMinutes) < -waitMinutes)
+    {
+        correctedLineTime.hours+=12;
+        if (correctedLineTime.hours < 0) correctedLineTime.hours = -correctedLineTime.hours;
+    }
+    correctedLineTime.hours%=24;
+    return {diff:diffMin12, correctedLineTime};
 };
 let Emitter = {
     startMinuteTick: (socketQueue) => {
