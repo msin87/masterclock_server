@@ -17,5 +17,6 @@ es.use(function (req, res, next) {
 es.use(clockLinesRouter);
 es.use(systemConfigRouter);
 es.use(scheduleRouter);
+ClockLinesActions.startMinuteTick(SocketQueue);
 ClockLinesActions.handleArrows(SocketQueue);
 es.listen(3001, () => console.log('Express started at port 3001! Folder: ' + __dirname));
