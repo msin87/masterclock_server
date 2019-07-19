@@ -17,9 +17,11 @@ List of commands for controlling the microcontroller via UART
 #### 0x01 ####
  *Description*: Set the number *N* of pulses to send to the line ID
 *Frame format*:
+
  | 0  |  1 |  2 |  3 | 4|...|27|28|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | 0x01  | ID1  | ID0  | Nid0[1]  |Nid0[0] |...|Nid12[1]|Nid12[0]
+
 *Explanations*:
 In ID1 and ID0 bytes, the numbers (identifiers) of the lines for which data (number of pulses) will be transmitted in the next bytes are set by bits. ID0 allows you to set lines with id from 0 to 7. ID1 - id from 8 to 11. Next are the high and low bytes of the uint16 type number for the lines specified earlier. First comes the number for the line with the lowest id contained in ID0 and ID1 bytes.
 
