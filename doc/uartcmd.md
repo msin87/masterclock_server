@@ -28,6 +28,7 @@ In ID1 and ID0 bytes, the numbers (identifiers) of the lines for which data (num
 |bit| ID1[7] | ID1[6] |  ID1[5] |  ID1[4] |  ID1[3] | ID1[2] | ID1[1] | ID1[0] | ID0[7] | ID0[6]| ID0[5]| ID0[4]| ID0[3]| ID0[2]| ID0[1]| ID0[0]|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | line| -  | -  | -  | -  | 11  | 10  | 9  |  8 | 7  | 6  | 5  | 4  | 3  | 2  | 1  | 0  |
+
 *Example* :
 
     (hex): 01 04 5A 02 D0 02 CF 02 CE 02 CD 02 CC
