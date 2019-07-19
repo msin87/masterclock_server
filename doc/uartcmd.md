@@ -32,12 +32,14 @@ In ID1 and ID0 bytes, the numbers (identifiers) of the lines for which data (num
 *Example* :
 
     (hex): 01 04 5A 02 D0 02 CF 02 CE 02 CD 02 CC
-`01` - CMD;
-`04` - line ID 10;
-`5A` - lines ID 6,4,3,1;
-`D0 02` - 720 pulses for line ID 1
-`02 CF` - 719 pulses for line ID 3
-`02 CE` - 718 pulses for line ID 4
-`02 CD` - 717 pulses for line ID 6
-`02 CC` - 716 pulses for line ID 10
 
+|  data 	| description  	|
+|:-:	|:-:	|
+| `01`|CMD 	|
+|  `04` 	|   line ID 10	|
+|   `5A`	|  lines ID 6,4,3,1 	|
+|  `D0 02`  	|720 pulses for line ID 1   	|
+|  `02 CF` 	| 719 pulses for line ID 3  	|
+|   `02 CE`	| 718 pulses for line ID 4  	|
+|  `02 CD` 	| 717 pulses for line ID 6  	|
+|`02 CC` |716 pulses for line ID 10 |
