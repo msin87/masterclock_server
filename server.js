@@ -5,7 +5,7 @@ const clockLinesRouter = require('./routes/clockLines');
 const systemConfigRouter = require('./routes/system');
 const scheduleRouter = require('./routes/schedule');
 const ClockLinesActions = require('./Events/clockLinesEmitter');
-const SocketQueue = require('./websocket/websocket')(500);
+const WS = require('./websocket/websocket');
 es.use(bodyParser.json());
 es.use(bodyParser.urlencoded(({extended: true})));
 es.use(function (req, res, next) {
@@ -17,6 +17,6 @@ es.use(function (req, res, next) {
 es.use(clockLinesRouter);
 es.use(systemConfigRouter);
 es.use(scheduleRouter);
-ClockLinesActions.startMinuteTick(SocketQueue);
-ClockLinesActions.handleArrows(SocketQueue);
+ClockLinesActions.startMinuteTick(WS);
+ClockLinesActions.handleArrows(WS);
 es.listen(3001, () => console.log('Express started at port 3001! Folder: ' + __dirname));

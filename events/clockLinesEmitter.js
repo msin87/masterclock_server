@@ -6,7 +6,7 @@ const EVENT_LOOP_TIME = 3000;
 const SerialPort = require('serialport');
 const serialPort = new SerialPort('COM6',{baudRate: 57600});
 let Emitter = {
-    startMinuteTick: (socketQueue) => {
+    startMinuteTick: (ws) => {
         if (!this.timer) {
             this.timer = setInterval(async () => {
                 let date = new Date();
@@ -14,7 +14,7 @@ let Emitter = {
                     let lines = await ClockLinesConfig.all();
                     let newLines = await Actions.addMinute(lines);
                     await ClockLinesConfig.update(newLines);
-                    socketQueue.push({type: 'time', payload: newLines.map(l => l.time)});
+                    ws.sendJsonToUI({type: 'time', payload: newLines.map(l => l.time)});
                 }
                 this.oldMinutes = date.getMinutes();
             }, EVENT_LOOP_TIME);
@@ -41,7 +41,7 @@ let Emitter = {
         serialPort.write(JSON.stringify(serialMsg),err=>{
             if (err)
             {
-               return console.log(err.message);
+                return console.log(err.message);
             }
             console.log('COM6 written');
         })
