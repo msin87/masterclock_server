@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "body-parser": "latest",
+    "buffer-crc32": "^0.2.13",
     "colors": "^1.3.3",
     "express": "^4.17.1",
     "serialport": "^7.1.5",

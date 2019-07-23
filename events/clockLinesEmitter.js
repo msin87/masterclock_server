@@ -4,7 +4,7 @@ const SystemConfig = require('../config/models/system');
 const dtLib = require('../lib/datetime');
 const EVENT_LOOP_TIME = 3000;
 let Emitter = {
-    startMinuteTick: () => new Promise(resolve=>{
+    startMinuteTick: () => new Promise(resolve => {
         if (!this.timer) {
             this.timer = setInterval(async () => {
                 let date = new Date();
@@ -25,19 +25,14 @@ let Emitter = {
         if (this.timer) clearInterval(this.timer);
         console.log('EVENT: Success! Minute Tick stopped')
     },
-    handleArrows: async (socketQueue, linesId) => {
-        const {pulse} = (await SystemConfig.all())[0];
-        let linesTime = (await ClockLinesConfig.all()).map(line => new Date(Date.parse(`2000-01-01T${line['time']}:00.000${line['zone'].match(/[+-]\d{1,2}/)}:00`)));
-        linesId = linesId || linesTime.map((val, id) => id);
-        let serialMsg = {
-            type: 'linesLag',
-            payload: linesId.map(id => ({id, ...dtLib.getMinutesLag(linesTime[id], 10)}))
-        };
-        let command;
-        switch (serialMsg.type) {
-            case 'linesLag':
-                command = 0x00;
-        }
+    handleArrows: async (...linesId) => {
+        let linesTime = (await ClockLinesConfig.all())
+            // .filter(line => line.status === 'RUN')
+            .map(line => new Date(Date
+                .parse(`2000-01-01T${line['time']}:00.000${line['zone']
+                    .match(/[+-]\d{1,2}/)}:00`)));
+        linesId = linesId.length?linesId:linesTime.map((val, id) => id);
+        return linesId.map(id => ({id, ...dtLib.getMinutesLag(linesTime[id], 10)}));
 
     }
 };
