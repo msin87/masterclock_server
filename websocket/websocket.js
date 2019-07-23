@@ -13,7 +13,7 @@ wss.on('connection', (socket) => {
 });
 
 
-let WS = (socketEvents, socket) => {
+let WS = ((socketEvents, socket) => {
     socketEvents.on('connected', wsSocket => socket = wsSocket);
     socketEvents.on('close', () => socket = undefined);
     return {
@@ -21,7 +21,7 @@ let WS = (socketEvents, socket) => {
             socket ? socket.send(JSON.stringify(json)) : console.log('WEBSOCKET: Warning! Attempt to send without connection.')
         }
     }
-};
+})(socketEvents);
 
-module.exports = WS(socketEvents);
+module.exports = WS;
 
