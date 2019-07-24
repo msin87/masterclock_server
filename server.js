@@ -18,7 +18,12 @@ es.use(function (req, res, next) {
 es.use(clockLinesRouter);
 es.use(systemConfigRouter);
 es.use(scheduleRouter);
-ClockLinesActions.startMinuteTick().then(msg => ws.sendJsonToUI(msg));
-ClockLinesActions.handleArrows().then(counters => stm32API.pulseCounter.incrementPulseCounter(counters));
-
+ClockLinesActions.startMinuteTick().then(msg => ws.sendToUI(msg));
+ClockLinesActions.handleArrows().then(counters => stm32API.pulseCounter.setPulseCounter(counters));
+// ClockLinesActions.startMinuteTick().then(lines => {
+//     ws.sendToUI({type: 'time', payload: lines});
+//     //stm32API.pulseCounter.incrementPulseCounter(lines);
+// });
+// ClockLinesActions.handleArrows().then(counters => stm32API.pulseCounter.setPulseCounter(counters));
+// stm32API.events.on('response', data => ws.sendToUI(data));
 es.listen(3001, () => console.log('Express started at port 3001! Folder: ' + __dirname));

@@ -17,7 +17,7 @@ let WS = ((socketEvents, socket) => {
     socketEvents.on('connected', wsSocket => socket = wsSocket);
     socketEvents.on('close', () => socket = undefined);
     return {
-        sendJsonToUI: json => {
+        sendToUI: json => {
             socket ? socket.send(JSON.stringify(json)) : console.log('WEBSOCKET: Warning! Attempt to send without connection.')
         }
     }

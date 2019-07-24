@@ -10,7 +10,8 @@ const nvram_IO = {
 const nvramAPI = {
     writeLinesTime: async linesTime => {
         // let data = linesTime.reduce((acc, time) => acc+time.split(':').map(number=>HEX_PREFIX+number).join(''),'');
-        let data = linesTime.reduce((acc, time) => acc + time['time'].split(':').join(''), '');
+        let data = linesTime.reduce((acc, time) =>
+            acc + time.split(':').join(''), '');
         await nvram_IO.write(data);
         return 'NVRAM: Write success'
     },

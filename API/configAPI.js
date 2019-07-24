@@ -59,7 +59,7 @@ const ConfigAPI = (configName) => {
                 return new Promise((resolve, reject) => {
                     let backup = config;
                     let msg = `PUT: Error! Can't find ${configName} element with ID '${+id}'`;
-                    if (id) {
+                    if (id!==undefined) {
                         if (config[+id]) {
                             msg = `PUT: Data of '${configName}' with ID = ${id} updated.`;
                             config[+id] = configData;

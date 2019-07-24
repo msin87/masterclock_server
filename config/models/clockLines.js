@@ -42,9 +42,9 @@ module.exports.update = async (newData, id) => {
     });
     try {
         let allTime;
-        if (id) {
+        if (id!==undefined) {
             allTime = await NVRAM.readLinesTime();
-            allTime[id] = newData['time'];
+            allTime[id] = newData[0].time;
         }
         else
         {
@@ -52,7 +52,7 @@ module.exports.update = async (newData, id) => {
         }
         await NVRAM.writeLinesTime(allTime);
 
-        return model.update(withoutTime, id);
+        return model.update(id===undefined?withoutTime:withoutTime[0], id);
     }
     catch (err) {
         throw err;
