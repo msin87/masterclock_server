@@ -19,6 +19,6 @@ es.use(clockLinesRouter);
 es.use(systemConfigRouter);
 es.use(scheduleRouter);
 ClockLinesActions.startMinuteTick().then(msg => ws.sendJsonToUI(msg));
-ClockLinesActions.handleArrows().then(counters => stm32API.setPulseCounter(counters))
+ClockLinesActions.handleArrows().then(counters => stm32API.pulseCounter.incrementPulseCounter(counters));
 
 es.listen(3001, () => console.log('Express started at port 3001! Folder: ' + __dirname));
