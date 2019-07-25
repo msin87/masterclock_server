@@ -48,14 +48,14 @@ module.exports.update = async (newData, id) => {
         }
         else
         {
-            allTime=newData;
+            allTime=newData.map(line=>line.time);
         }
         await NVRAM.writeLinesTime(allTime);
 
-        return model.update(id===undefined?withoutTime:withoutTime[0], id);
+        return model.update(withoutTime, id);
     }
     catch (err) {
-        throw err;
+        throw new Error(err);
     }
 };
 module.exports.delete = async (id) => {

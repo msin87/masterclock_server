@@ -9,8 +9,10 @@ wss.on('connection', (socket) => {
     socket.on('close', () => {
         console.log('WEBSOCKET: Disconnected!');
         socketEvents.emit('close', socket);
-    })
+    });
+    socket.on('error', err=>console.log(err));
 });
+
 
 
 let WS = ((socketEvents, socket) => {
@@ -18,7 +20,8 @@ let WS = ((socketEvents, socket) => {
     socketEvents.on('close', () => socket = undefined);
     return {
         sendToUI: json => {
-            socket ? socket.send(JSON.stringify(json)) : console.log('WEBSOCKET: Warning! Attempt to send without connection.')
+            socket ? socket.send(JSON.stringify(json),msg=>
+                console.log(msg)) : console.log('WEBSOCKET: Warning! Attempt to send without connection.')
         }
     }
 })(socketEvents);

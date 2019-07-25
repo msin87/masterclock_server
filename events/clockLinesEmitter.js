@@ -3,24 +3,24 @@ const ClockLinesConfig = require('../config/models/clockLines');
 const SystemConfig = require('../config/models/system');
 const dtLib = require('../lib/datetime');
 const EVENT_LOOP_TIME = 3000;
+const events = new (require('events'));
 let Emitter = {
+    events,
     startMinuteTick: () => new Promise(resolve => {
         if (!this.timer) {
             this.timer = setInterval(async () => {
                 let date = new Date();
-               //  if (this.oldMinutes !== undefined && (date.getMinutes() !== this.oldMinutes)) {
-                    let newLines = await Actions.addMinute((await ClockLinesConfig.all()).filter(line=>line.status==='RUN'));
-                    newLines.forEach(async line=>{
-                        await ClockLinesConfig.update([line],line.id);
-                    });
-                    resolve(newLines);
-                // }
-               //  this.oldMinutes = date.getMinutes();
+                if (this.oldMinutes !== undefined && (date.getMinutes() !== this.oldMinutes)) {
+                    let newLines = await Actions.addMinute((await ClockLinesConfig.all()).filter(line => line.status === 'RUN'));
+                    await ClockLinesConfig.update(newLines);
+                    events.emit('minuteAddTick', newLines);
+                }
+                this.oldMinutes = date.getMinutes();
             }, EVENT_LOOP_TIME);
-            console.log('EVENT: Success! Minute Tick started')
+            resolve('EVENT: Success! Minute Tick started');
         }
         else {
-            console.log('EVENT: Warning! Minute Tick is already started')
+            resolve('EVENT: Warning! Minute Tick is already started');
         }
     }),
     stopMinuteTick: () => {
@@ -35,7 +35,7 @@ let Emitter = {
                 .match(/[+-]\d{1,2}/)}:00`)));
         linesId = linesId.length ? linesId : filteredLines.map((val) =>
             val.id);
-        return linesTime.map((time,index) => (
+        return linesTime.map((time, index) => (
             {id: linesId[index], ...dtLib.getMinutesLag(time, 10)}));
 
     }
