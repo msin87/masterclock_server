@@ -101,7 +101,7 @@ const API = {
         send(buffer);
     },
     setPulseWidth: lines => {
-        const CMD = 0x01;
+        const CMD = 0x06;
         send(makeHeadDataBuffer(CMD, lines, lines.map(line => line.width / 250 - 1), 8));
     },
     events:events,

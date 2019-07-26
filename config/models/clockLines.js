@@ -2,20 +2,31 @@ const ConfigAPI = require('../../API/configAPI.js');
 const ModelFactory = require('../factory/modelfactory');
 const NVRAM = require('../../API/nvramAPI');
 let ClockLinesConfig = ConfigAPI('clockLines');
-let model =  ModelFactory(ClockLinesConfig);
-
+let model = ModelFactory(ClockLinesConfig);
+const getLinesWOTime = lines => {
+    if (Array.isArray(lines)) {
+        return lines.map(data => {
+            const {time, ...woTime} = data;
+            return woTime;
+        });
+    }
+    else{
+        const {time, ...woTime} = lines;
+        return woTime;
+    }
+};
 module.exports.all = async () => {
     try {
         let config = await model.all();
         let allTime = await NVRAM.readLinesTime();
-        return config.map((item, id) => ({...item,time: allTime[id]}));
+        return config.map((item, id) => ({...item, time: allTime[id]}));
     }
     catch (err) {
         throw err;
     }
 
 };
-module.exports.findById = async (id=0) => {
+module.exports.findById = async (id = 0) => {
     try {
         return {...await model.findById(id), time: await NVRAM.readLinesTime()[id]};
     }
@@ -36,19 +47,15 @@ module.exports.push = async (newData) => {
     }
 };
 module.exports.update = async (newData, id) => {
-    const withoutTime=newData.map(data=>{
-        const {time,...woTime} = data;
-        return woTime;
-    });
+    const withoutTime = getLinesWOTime(newData);
     try {
         let allTime;
-        if (id!==undefined) {
+        if (id >= 0) {
             allTime = await NVRAM.readLinesTime();
-            allTime[id] = newData[0].time;
+            allTime[id] = newData.time;
         }
-        else
-        {
-            allTime=newData.map(line=>line.time);
+        else {
+            allTime = newData.map(line => line.time);
         }
         await NVRAM.writeLinesTime(allTime);
 

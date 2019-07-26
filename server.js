@@ -4,7 +4,7 @@ const es = express();
 const clockLinesRouter = require('./routes/clockLines');
 const systemConfigRouter = require('./routes/system');
 const scheduleRouter = require('./routes/schedule');
-const ClockLinesActions = require('./Events/clockLinesEmitter');
+const ClockLines = require('./Events/clockLinesEmitter');
 const ws = require('./websocket/websocket');
 const stm32API = require('./API/stm32API');
 es.use(bodyParser.json());
@@ -19,12 +19,13 @@ es.use(clockLinesRouter);
 es.use(systemConfigRouter);
 es.use(scheduleRouter);
 
+ClockLines.tuneArrows().then(console.log);
+ClockLines.startArrowsTick().then(console.log);
 
-ClockLinesActions.startMinuteTick().then(console.log);
-ClockLinesActions.handleArrows().then(counters => stm32API.pulseCounter.setPulseCounter(counters));
-ClockLinesActions.events.on('minuteAddTick',lines=>{
+
+ClockLines.events.on('minuteAddTick', lines => {
     ws.sendToUI({type: 'time', payload: lines});
-    stm32API.pulseCounter.incrementPulseCounter(lines);
+    stm32API.pulseCounter.incrementPulseCounter(lines.filter(line=>line.status==='RUN'));
 });
 stm32API.events.on('response', data => ws.sendToUI(data));
 es.listen(3001, () => console.log('Express started at port 3001! Folder: ' + __dirname));
