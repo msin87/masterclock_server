@@ -53,7 +53,9 @@ let Emitter = {
         }
         else {
             id = filteredLines.map(val => val.id);
-            stm32API.pulseCounter.setPulseCounter(linesTime.map((time, index) => ({id: id[index], ...dtLib.getMinutesLag(time, 10)})));
+            const newLines=linesTime.map((time, index) => ({id: id[index], ...dtLib.getMinutesLag(time, 10)}));
+
+            stm32API.pulseCounter.setPulseCounter(newLines);
         }
 
         return 'LINES TUNE: Started!'

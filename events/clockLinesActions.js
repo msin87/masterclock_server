@@ -1,10 +1,9 @@
-const getTime = require('../lib/datetime').getTime;
+const getTime = require('../lib/datetime').getTimeString;
 const MINUTE = 60 * 1000;
 
 let getAddedTime = (dateString) => getTime(Date.parse(dateString) + MINUTE);
 let Events = {
-    addMinute: async (lines) => {
-        try {
+    addMinute: (lines) => {
             return lines.map((line, id) => {
                 if (line['status'] === 'RUN') {
                     line['time'] = getAddedTime((`2000-01-01T${line['time']}`));
@@ -13,10 +12,6 @@ let Events = {
                 }
                 else return line;
             });
-        }
-        catch (err) {
-            console.log(err);
-        }
     }
 };
 module.exports = Events;
