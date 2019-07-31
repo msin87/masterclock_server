@@ -5,5 +5,5 @@ module.exports = ControllerFactory(ClockLinesModel);
 module.exports.tune = (req, res) => {
     ClockLinesEmitter.tuneArrows((req.params.id))
         .then( msg => res.send(msg))
-        .catch(err => res.status(err.code).send(err.msg))
+        .catch(err => res.status(404).send(err.message))
 };

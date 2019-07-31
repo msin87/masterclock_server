@@ -36,24 +36,25 @@ let Emitter = {
     tuneArrows: async (id) => {
         const lines = await ClockLinesConfig.all();
         const filteredLines = lines.filter(line => line.status === 'RUN');
-        const linesTime = filteredLines.map(line =>
-            new Date(Date
+        const linesTime = filteredLines.map(line => ({
+            id: line.id, time: new Date(Date
                 .parse(`2000-01-01T${line['time']}:00.000${line['zone']
-                    .match(/[+-]\d{1,2}/)}:00`)));
-        if (typeof(id)==='string'||typeof(id)==='number') {
-            id=+id;
-            const filteredIDs=filteredLines.map(line=>line.id);
-
-            if (!filteredIDs.filter(val=>val===id)){
-              throw new Error(`LINES TUNE: Line with ID ${id} is not found or not started`);
+                    .match(/[+-]\d{1,2}/)}:00`))
+        }));
+        if (typeof(id) === 'string' || typeof(id) === 'number') {
+            id = +id;
+            const filteredIDs = filteredLines.map(line => line.id);
+            if (!filteredIDs.filter(val => val === id).length) {
+                throw new Error(`LINES TUNE: Line with ID ${id} is not found or not started`);
             }
-            else{
-                stm32API.pulseCounter.setPulseCounter({id: id, ...dtLib.getMinutesLag(linesTime[id], 10)});
+            else {
+                let line=linesTime.filter(lines=>lines.id===id)[0];
+                stm32API.pulseCounter.setPulseCounter([{id: id, ...dtLib.getMinutesLag(line.time, 10)}]);
             }
         }
         else {
             id = filteredLines.map(val => val.id);
-            const newLines=linesTime.map((time, index) => ({id: id[index], ...dtLib.getMinutesLag(time, 10)}));
+            const newLines = linesTime.map((line) => ({id: line.id, ...dtLib.getMinutesLag(line.time, 10)}));
 
             stm32API.pulseCounter.setPulseCounter(newLines);
         }
