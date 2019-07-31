@@ -9,46 +9,44 @@ const buffer_crc32 = require('buffer-crc32');
 const Events = require('events');
 const events = new Events;
 
-const serialPort = new SerialPort(SERIAL_PORT, {baudRate: 57600});
-const serialPipe = serialPort.pipe(new ByteLength({length: 33}));
-const Responses = () => {
-    let getIDs = (data) => {
-        const idField = (data.readUInt8(1) << 8) | data.readUInt8(2);
-        const IDs = [];
-        for (let i = 0; i < 16; i++) {
-            if ((1 << i) & idField) {
-                IDs.push({id: i})
-            }
-        }
-        return IDs;
-    };
-    return {
-        pulseCounters: (data) => {
-            const IDs = getIDs(data);
-            return IDs.map((val, index) => {
-                return {id: IDs[index].id, pulseCounter: data.readUInt16BE(3 + 2 * index)}
-            });
-        },
-        currentConsumption: (data) => {
-            const IDs = getIDs(data);
-            return IDs.map((val, index) => {
-                let current = Math.round(data.readUInt8(3 + index) * ADC_MULT * CURRENT_MULT_MA);
-                return {id: IDs[index].id, currentConsumption: current}
-            });
+const getIDs = (data) => {
+    const idField = (data.readUInt8(1) << 8) | data.readUInt8(2);
+    const IDs = [];
+    for (let i = 0; i < 16; i++) {
+        if ((1 << i) & idField) {
+            IDs.push({id: i})
         }
     }
+    return IDs;
 };
+const serialPort = new SerialPort(SERIAL_PORT, {baudRate: 57600});
+const serialPipe = serialPort.pipe(new ByteLength({length: 33}));
+const responses = () => ({
+    pulseCounters: (data) => {
+        const IDs = getIDs(data);
+        return IDs.map((val, index) => {
+            return {id: IDs[index].id, pulseCounter: data.readUInt16BE(3 + 2 * index)}
+        });
+    },
+    currentConsumption: (data) => {
+        const IDs = getIDs(data);
+        return IDs.map((val, index) => {
+            let current = Math.round(data.readUInt8(3 + index) * ADC_MULT * CURRENT_MULT_MA);
+            return {id: IDs[index].id, currentConsumption: current}
+        });
+    }
+});
 
 const responseParser = income => {
     const data = income.slice(0, 29);
     const cmd = income.readUInt8(0);
-    const responses = Responses();
+
     switch (cmd) {
         case 0x01:
-            events.emit('response',{type:'pulseCounter', payload: responses.pulseCounters(data) });
+            events.emit('response', {type: 'pulseCounter', payload: responses.pulseCounters(data)});
             break;
         case 0x02:
-            events.emit('response',{type:'currentConsumption', payload: responses.currentConsumption(data) });
+            events.emit('response', {type: 'currentConsumption', payload: responses.currentConsumption(data)});
             break;
 
     }
@@ -90,46 +88,69 @@ const makeData_u8 = (data = [0]) => {
 
 const logCb = (err) => err ? console.log(err.message) :
     console.log(`${(new Date()).toLocaleString()} ${SERIAL_PORT}: data sent.`);
-const send = (buffer) => {
-    serialPort.write(Buffer.concat([buffer, buffer_crc32(buffer)], HEADDATA_SIZE + 4), logCb);
+const send = (port,buffer) => {
+    port.write(Buffer.concat([buffer, buffer_crc32(buffer)], HEADDATA_SIZE + 4), logCb);
 };
 const makeHeadDataBuffer = (cmd, lines, data, type = 16) =>
     Buffer.concat([makeHead(cmd, lines), type === 16 ? makeData_u16(data) : makeData_u8(data)], HEADDATA_SIZE);
 const API = {
     restart: () => {
         const buffer = Buffer.alloc(HEADDATA_SIZE);
-        send(buffer);
+        send(serialPort,buffer);
     },
     setPulseWidth: lines => {
         const CMD = 0x06;
-        send(makeHeadDataBuffer(CMD, lines, lines.map(line => line.width / 250 - 1), 8));
+        send(serialPort,makeHeadDataBuffer(CMD, lines, lines.map(line => line.width / 250 - 1), 8));
     },
-    events:events,
+    events: events,
     pulseCounter: {
         setPulseCounter: (lines) => {
             const CMD = 0x01;
             lines = lines.filter(val =>
                 val.diff >= 0);
-            send(makeHeadDataBuffer(CMD, lines, lines.map(line => line.diff)));
+            send(serialPort,makeHeadDataBuffer(CMD, lines, lines.map(line => line.diff)));
         },
         incrementPulseCounter: (lines) => {
             const CMD = 0x02;
-            send(makeHeadDataBuffer(CMD, lines));
+            send(serialPort,makeHeadDataBuffer(CMD, lines));
         },
         resetPulseCounter: (lines) => {
             const CMD = 0x03;
-            send(makeHeadDataBuffer(CMD, lines));
+            send(serialPort,makeHeadDataBuffer(CMD, lines));
         },
         suspendPulseCounter: (lines) => {
             const CMD = 0x04;
-            send(makeHeadDataBuffer(CMD, lines));
+            send(serialPort,makeHeadDataBuffer(CMD, lines));
         },
         resumePulseCounter: (lines) => {
             const CMD = 0x05;
-            send(makeHeadDataBuffer(CMD, lines));
+            send(serialPort,makeHeadDataBuffer(CMD, lines));
         }
     }
 };
+
+//emulator section
+const STM32_EMU = require('../STM32_EMU/stm32_emulator');
+const emuResponseParser = income => {
+    const data = income.slice(0, 29);
+    const cmd = income.readUInt8(0);
+
+    switch (cmd) {
+        case 0x00:
+            send(STM32_EMU.serialPort,makeHeadDataBuffer(0x00,cmd));
+            break;
+        case 0x01:
+            events.emit('response', {type: 'currentConsumption', payload: responses.currentConsumption(data)});
+            break;
+
+    }
+};
+STM32_EMU.serialPipe.on('data', data => {
+    if (!Buffer.compare(buffer_crc32(data.slice(0, 29)), data.slice(29))) {
+        responseParser(data);
+    }
+
+});
 
 module.exports = API;
 // serialPort.write(JSON.stringify(serialMsg),err=>{
