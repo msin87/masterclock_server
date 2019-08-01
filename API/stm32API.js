@@ -88,7 +88,7 @@ const makeData_u8 = (data = [0]) => {
 
 const logCb = (err) => err ? console.log(err.message) :
     console.log(`${(new Date()).toLocaleString()} ${SERIAL_PORT}: data sent.`);
-const send = (port,buffer) => {
+const send = (port, buffer) => {
     port.write(Buffer.concat([buffer, buffer_crc32(buffer)], HEADDATA_SIZE + 4), logCb);
 };
 const makeHeadDataBuffer = (cmd, lines, data, type = 16) =>
@@ -96,11 +96,11 @@ const makeHeadDataBuffer = (cmd, lines, data, type = 16) =>
 const API = {
     restart: () => {
         const buffer = Buffer.alloc(HEADDATA_SIZE);
-        send(serialPort,buffer);
+        send(serialPort, buffer);
     },
     setPulseWidth: lines => {
         const CMD = 0x06;
-        send(serialPort,makeHeadDataBuffer(CMD, lines, lines.map(line => line.width / 250 - 1), 8));
+        send(serialPort, makeHeadDataBuffer(CMD, lines, lines.map(line => line.width / 250 - 1), 8));
     },
     events: events,
     pulseCounter: {
@@ -108,46 +108,87 @@ const API = {
             const CMD = 0x01;
             lines = lines.filter(val =>
                 val.diff >= 0);
-            send(serialPort,makeHeadDataBuffer(CMD, lines, lines.map(line => line.diff)));
+            send(serialPort, makeHeadDataBuffer(CMD, lines, lines.map(line => line.diff)));
         },
         incrementPulseCounter: (lines) => {
             const CMD = 0x02;
-            send(serialPort,makeHeadDataBuffer(CMD, lines));
+            send(serialPort, makeHeadDataBuffer(CMD, lines));
         },
         resetPulseCounter: (lines) => {
             const CMD = 0x03;
-            send(serialPort,makeHeadDataBuffer(CMD, lines));
+            send(serialPort, makeHeadDataBuffer(CMD, lines));
         },
         suspendPulseCounter: (lines) => {
             const CMD = 0x04;
-            send(serialPort,makeHeadDataBuffer(CMD, lines));
+            send(serialPort, makeHeadDataBuffer(CMD, lines));
         },
         resumePulseCounter: (lines) => {
             const CMD = 0x05;
-            send(serialPort,makeHeadDataBuffer(CMD, lines));
+            send(serialPort, makeHeadDataBuffer(CMD, lines));
         }
     }
 };
 
 //emulator section
 const STM32_EMU = require('../STM32_EMU/stm32_emulator');
+const Counters = () => {
+    let counters = [];
+    return {
+        setCounter: (id, value) => counters[id] = value,
+        getCounter: (id) => counters[id],
+        decrementCounters: id => {
+            if (id) {
+                counters[id] > 0 ? counters[id] -= 1 : 0;
+            }
+            else {
+                counters = counters.map(val => val > 0 ? val - 1 : val);
+            }
+        },
+        isCountersEmpty: () => !counters.reduce((acc, val) => acc || val)
+    }
+};
+const Pulse = () => {
+    const width = 500;
+    let pulseTimer;
+    const stopTuning = () => {
+        console.log('cleared');
+        clearInterval(pulseTimer)
+    };
+    return {
+        startTuning: () => {
+            if (!counters.isCountersEmpty()) {
+                pulseTimer = setInterval((() => {
+                    counters.decrementCounters();
+                    if (counters.isCountersEmpty())
+                        stopTuning();
+                }), width)
+            }
+        }
+    }
+};
+
+const counters = Counters();
+const pulse = Pulse();
+
 const emuResponseParser = income => {
-    const data = income.slice(0, 29);
     const cmd = income.readUInt8(0);
 
     switch (cmd) {
         case 0x00:
-            send(STM32_EMU.serialPort,makeHeadDataBuffer(0x00,cmd));
+            send(STM32_EMU.serialPort, makeHeadDataBuffer(0x00, cmd));
             break;
         case 0x01:
-            events.emit('response', {type: 'currentConsumption', payload: responses.currentConsumption(data)});
+            getIDs(income).forEach((line, index) => {
+                counters.setCounter(line.id, income.readUInt16BE(3 + 2 * index));
+            });
+            pulse.startTuning();
             break;
 
     }
 };
 STM32_EMU.serialPipe.on('data', data => {
     if (!Buffer.compare(buffer_crc32(data.slice(0, 29)), data.slice(29))) {
-        responseParser(data);
+        emuResponseParser(data);
     }
 
 });
