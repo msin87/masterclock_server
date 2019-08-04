@@ -21,7 +21,7 @@ const getIDs = (data) => {
 };
 const serialPort = new SerialPort(SERIAL_PORT, {baudRate: 57600});
 const serialPipe = serialPort.pipe(new ByteLength({length: 33}));
-const responses = () => ({
+const responses = {
     pulseCounters: (data) => {
         const IDs = getIDs(data);
         return IDs.map((val, index) => {
@@ -35,7 +35,7 @@ const responses = () => ({
             return {id: IDs[index].id, currentConsumption: current}
         });
     }
-});
+};
 
 const responseParser = income => {
     const data = income.slice(0, 29);
@@ -131,37 +131,65 @@ const API = {
 
 //emulator section
 const STM32_EMU = require('../STM32_EMU/stm32_emulator');
+const getRandomCurrent = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 const Counters = () => {
     let counters = [];
     return {
-        setCounter: (id, value) => counters[id] = value,
-        getCounter: (id) => counters[id],
-        decrementCounters: id => {
-            if (id) {
+        set: (id, value) => counters[id] = value,
+        get: (id) => id >= 0 ? counters[id] : counters,
+        decrement: id => {
+            if (id >= 0) {
                 counters[id] > 0 ? counters[id] -= 1 : 0;
             }
             else {
                 counters = counters.map(val => val > 0 ? val - 1 : val);
             }
         },
-        isCountersEmpty: () => !counters.reduce((acc, val) => acc || val)
+        isEmpty: id => !counters[id],
+        increment: id => {
+            if (id >= 0) {
+                counters[id]++;
+            }
+            else {
+                counters = counters.map(val => val + 1);
+            }
+        }
     }
 };
 const Pulse = () => {
-    const width = 500;
-    let pulseTimer;
-    const stopTuning = () => {
-        console.log('cleared');
-        clearInterval(pulseTimer)
+    const width = 100;
+    let pulseTimers = [];
+    const stopTuning = id => {
+        if (id >= 0) {
+            clearInterval(pulseTimers[id]);
+            delete pulseTimers[id];
+        }
+        else {
+            pulseTimers.forEach(timer => clearInterval(timer));
+            pulseTimers = [];
+        }
+    };
+    const tune = id => {
+        pulseTimers[id] = setInterval(() => {
+            counters.decrement(id);
+            send(STM32_EMU.serialPort, makeHeadDataBuffer(0x01, [{id}], [counters.get(id)]));
+            send(STM32_EMU.serialPort, makeHeadDataBuffer(0x02, [{id}], [getRandomCurrent(120, 160)]));
+            if (counters.isEmpty(id)) {
+                stopTuning(id)
+            }
+        }, width)
     };
     return {
         startTuning: () => {
-            if (!counters.isCountersEmpty()) {
-                pulseTimer = setInterval((() => {
-                    counters.decrementCounters();
-                    if (counters.isCountersEmpty())
-                        stopTuning();
-                }), width)
+            counters.get().forEach((counter, id) => {
+                clearInterval(counter);
+                tune(id);
+            })
+        },
+        onePulse: (id) => {
+            counters.increment(id);
+            if (!pulseTimers[id]) {
+                tune(id);
             }
         }
     }
@@ -175,15 +203,19 @@ const emuResponseParser = income => {
 
     switch (cmd) {
         case 0x00:
-            send(STM32_EMU.serialPort, makeHeadDataBuffer(0x00, cmd));
+            send(STM32_EMU.serialPort, makeHeadDataBuffer(cmd, 0));
             break;
         case 0x01:
             getIDs(income).forEach((line, index) => {
-                counters.setCounter(line.id, income.readUInt16BE(3 + 2 * index));
+                counters.set(line.id, income.readUInt16BE(3 + 2 * index));
             });
             pulse.startTuning();
             break;
-
+        case 0x02:
+            getIDs(income).forEach(line => {
+                pulse.onePulse(line.id)
+            });
+            break;
     }
 };
 STM32_EMU.serialPipe.on('data', data => {
