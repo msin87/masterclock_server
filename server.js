@@ -19,13 +19,27 @@ es.use(clockLinesRouter);
 es.use(systemConfigRouter);
 es.use(scheduleRouter);
 
-ClockLines.tuneArrows().then(console.log);
-ClockLines.startArrowsTick().then(console.log);
+ClockLines.tuneArrows().then(
+    console.log);
+ClockLines.startArrowsTick().then(
+    console.log);
 
 
 ClockLines.events.on('minuteAddTick', lines => {
-    ws.sendToUI({type: 'time', payload: lines});
-    stm32API.pulseCounter.incrementPulseCounter(lines.filter(line=>line.status==='RUN'));
+
+    console.log('tick');
+    stm32API.pulseCounter.incrementPulseCounter(lines.filter(line => line.status === 'RUN'));
 });
-stm32API.events.on('response', data => ws.sendToUI(data));
+
+stm32API.events.on('response', async data => {
+    switch (data.type) {
+        case 'pulseCounter':
+            const newLines=await ClockLines.storeMinuteAdd(data.payload[0].id);
+            ws.sendToUI({type: 'time', payload: newLines});
+            break;
+        default:
+            break;
+    }
+    ws.sendToUI(data);
+});
 es.listen(3001, () => console.log('Express started at port 3001! Folder: ' + __dirname));

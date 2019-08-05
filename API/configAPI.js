@@ -2,17 +2,14 @@ const fs = require('fs');
 const CONFIGPATH = './config/';
 const JsonIO = filename => ({
     readJson: () => {
-        return new Promise((resolve, reject) => {
-            fs.readFile(CONFIGPATH + filename + '.json', 'utf8', (err, data) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    let jData = JSON.parse(data);
-                    Array.isArray(jData) ? resolve(jData) : reject(`JsonIO: Error! The configuration in '${filename}.json' is not an array type!`);
-                }
-            })
-        })
+        const jData = JSON.parse(fs.readFileSync(CONFIGPATH + filename + '.json', 'utf8'));
+        if (Array.isArray(jData)) {
+            return jData;
+        }
+        else {
+            console.log(`JsonIO: Error! The configuration in '${filename}.json' is not an array type!`);
+            return 0;
+        }
     },
     writeJson: json => {
         return new Promise((resolve, reject) => {
@@ -28,15 +25,8 @@ const JsonIO = filename => ({
 const ConfigAPI = (configName) => {
         let jIO = JsonIO(configName),
             config = [];
-        jIO.readJson()
-            .then(data => {
-                console.log(`JsonIO: Init. Read configuration '${configName}.json' complete`);
-                config = data;
-            })
-            .catch(err => {
-                console.log(`JsonIO: Init. Error! Can't read configuration '${configName}'.json \r\n ${err}`);
-                process.exit(1);
-            });
+        config = jIO.readJson();
+        if (config === 0) process.exit(1);
         return {
             push: (configData) => {
                 return new Promise((resolve, reject) => {
@@ -57,9 +47,10 @@ const ConfigAPI = (configName) => {
             },
             update: (configData, id) => {
                 return new Promise((resolve, reject) => {
+                    if (!configData) reject(`PUT: Error! Empty object of '${configName}'`);
                     let backup = config;
                     let msg = `PUT: Error! Can't find ${configName} element with ID '${+id}'`;
-                    if (id!==undefined) {
+                    if (id !== undefined) {
                         if (config[+id]) {
                             msg = `PUT: Data of '${configName}' with ID = ${id} updated.`;
                             config[+id] = configData;
@@ -87,17 +78,7 @@ const ConfigAPI = (configName) => {
             },
             all:
                 () => {
-                    return new Promise((resolve, reject) => {
-                        let msg = `GET: ${configName}`;
-                        jIO.readJson()
-                            .then((data) => {
-                                msg = `GET: ${configName}`;
-                                resolve(data)
-                            })
-                            .catch(err => {
-                                reject({code: 500, err})
-                            })
-                    })
+                    return new Promise(resolve => resolve(config));
                 },
             findById: (id = 0) => {
                 return new Promise((resolve, reject) => {

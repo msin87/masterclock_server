@@ -26,6 +26,7 @@ module.exports.all = async () => {
     }
 
 };
+module.exports.getTime = async () => await NVRAM.readLinesTime();
 module.exports.findById = async (id = 0) => {
     try {
         return {...await model.findById(id), time: await NVRAM.readLinesTime()[id]};

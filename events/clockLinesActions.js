@@ -7,7 +7,7 @@ let Events = {
             return lines.map((line, id) => {
                 if (line['status'] === 'RUN') {
                     line['time'] = getAddedTime((`2000-01-01T${line['time']}`));
-                    console.log(`${(new Date()).toLocaleString()} Event: Success! 'addMinute', Clock Line ID = '${id}'`);
+                    console.log(`${(new Date()).toLocaleString()} Event: Success! 'addMinute', Clock Line ID = '${line['id']}', time = ${line['time']}`);
                     return line;
                 }
                 else return line;

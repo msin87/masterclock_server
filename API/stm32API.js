@@ -6,6 +6,7 @@ const CURRENT_MULT_MA = 1000;
 const SerialPort = require('serialport');
 const ByteLength = require('@serialport/parser-byte-length');
 const buffer_crc32 = require('buffer-crc32');
+const nvramAPI = require('../API/nvramAPI');
 const Events = require('events');
 const events = new Events;
 
@@ -40,13 +41,20 @@ const responses = {
 const responseParser = income => {
     const data = income.slice(0, 29);
     const cmd = income.readUInt8(0);
+    const date = new Date().toLocaleString();
+    let payload;
 
     switch (cmd) {
         case 0x01:
-            events.emit('response', {type: 'pulseCounter', payload: responses.pulseCounters(data)});
+
+            payload = responses.pulseCounters(data);
+            // console.log(`${date}: ${SERIAL_PORT}: Pulse counter: ID=${payload[0].id}, pulses: ${payload[0]['pulseCounter']} `);
+            events.emit('response', {type: 'pulseCounter', payload});
             break;
         case 0x02:
-            events.emit('response', {type: 'currentConsumption', payload: responses.currentConsumption(data)});
+            payload = responses.currentConsumption(data);
+            // console.log(`${date}: ${SERIAL_PORT}: Current sensor: ID=${payload[0].id}, current: ${payload[0]['currentConsumption']} mA `);
+            events.emit('response', {type: 'currentConsumption', payload});
             break;
 
     }
@@ -86,10 +94,11 @@ const makeData_u8 = (data = [0]) => {
     return buffer;
 };
 
-const logCb = (err) => err ? console.log(err.message) :
+const logCb = (err) => err ?
+    console.log(err.message) :
     console.log(`${(new Date()).toLocaleString()} ${SERIAL_PORT}: data sent.`);
 const send = (port, buffer) => {
-    port.write(Buffer.concat([buffer, buffer_crc32(buffer)], HEADDATA_SIZE + 4), logCb);
+    port.write(Buffer.concat([buffer, buffer_crc32(buffer)], HEADDATA_SIZE + 4));
 };
 const makeHeadDataBuffer = (cmd, lines, data, type = 16) =>
     Buffer.concat([makeHead(cmd, lines), type === 16 ? makeData_u16(data) : makeData_u8(data)], HEADDATA_SIZE);
@@ -106,6 +115,11 @@ const API = {
     pulseCounter: {
         setPulseCounter: (lines) => {
             const CMD = 0x01;
+            const correctedTime=lines.map(line=>({
+                id:line.id,
+                time: `0${line.correctedLineTime.hours}`.substr(-2)+':'+`0${line.correctedLineTime.minutes}`.substr(-2)
+            }));
+            nvramAPI.updateLinesTime(correctedTime);
             lines = lines.filter(val =>
                 val.diff >= 0);
             send(serialPort, makeHeadDataBuffer(CMD, lines, lines.map(line => line.diff)));
@@ -157,7 +171,7 @@ const Counters = () => {
     }
 };
 const Pulse = () => {
-    const width = 100;
+    const width = 500;
     let pulseTimers = [];
     const stopTuning = id => {
         if (id >= 0) {
@@ -173,7 +187,7 @@ const Pulse = () => {
         pulseTimers[id] = setInterval(() => {
             counters.decrement(id);
             send(STM32_EMU.serialPort, makeHeadDataBuffer(0x01, [{id}], [counters.get(id)]));
-            send(STM32_EMU.serialPort, makeHeadDataBuffer(0x02, [{id}], [getRandomCurrent(120, 160)]));
+            send(STM32_EMU.serialPort, makeHeadDataBuffer(0x02, [{id}], [getRandomCurrent(120, 160)], 8));
             if (counters.isEmpty(id)) {
                 stopTuning(id)
             }

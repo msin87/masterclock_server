@@ -5,21 +5,31 @@ const SystemConfig = require('../config/models/system');
 const dtLib = require('../lib/datetime');
 const EVENT_LOOP_TIME = 3000;
 const events = new (require('events'));
-const minutePassed = (timer => {
-    if (timer) {
-        timer = setInterval
+const storeMinuteAdd = async (id) =>{
+    let lines=await ClockLinesConfig.all();
+    let newLines;
+    if (id>=0){
+        newLines = await Actions.addMinute(lines.filter(line=>line.id===id));
+        await ClockLinesConfig.update(newLines[0],id);
     }
-})();
-let Emitter = {
+    else
+    {
+        newLines = await Actions.addMinute(lines);
+        await ClockLinesConfig.update(newLines);
+    }
+    return newLines;
+
+};
+const Emitter = {
     events,
+    storeMinuteAdd,
     startArrowsTick: () => new Promise(resolve => {
         if (!this.timer) {
             this.timer = setInterval(async () => {
                 let date = new Date();
                 if (this.oldMinutes !== undefined && (date.getMinutes() !== this.oldMinutes)) {
-                    let newLines = await Actions.addMinute(await ClockLinesConfig.all());
-                    await ClockLinesConfig.update(newLines);
-                    events.emit('minuteAddTick', newLines);
+                    this.oldMinutes = date.getMinutes();
+                    events.emit('minuteAddTick', await ClockLinesConfig.all());
                 }
                 this.oldMinutes = date.getMinutes();
             }, EVENT_LOOP_TIME);
@@ -48,8 +58,9 @@ let Emitter = {
                 throw new Error(`LINES TUNE: Line with ID ${id} is not found or not started`);
             }
             else {
-                let line=linesTime.filter(lines=>lines.id===id)[0];
-                stm32API.pulseCounter.setPulseCounter([{id: id, ...dtLib.getMinutesLag(line.time, 10)}]);
+                const line=linesTime.filter(lines=>lines.id===id)[0];
+                const lag = dtLib.getMinutesLag(line.time, 10);
+                stm32API.pulseCounter.setPulseCounter([{id: id, ...lag}]);
             }
         }
         else {
