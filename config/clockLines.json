@@ -9,7 +9,7 @@
   {
     "id": 1,
     "zone": "Europe/Moscow+03",
-    "status": "STOP",
+    "status": "RUN",
     "load": "29%",
     "dts": false
   },
@@ -23,7 +23,7 @@
   {
     "id": 3,
     "zone": "Europe/Moscow+03",
-    "status": "STOP",
+    "status": "RUN",
     "load": "29%",
     "dts": false
   }
