@@ -5,15 +5,14 @@ const SystemConfig = require('../config/models/system');
 const dtLib = require('../lib/datetime');
 const EVENT_LOOP_TIME = 3000;
 const events = new (require('events'));
-const storeMinuteAdd = async (id) =>{
-    let lines=await ClockLinesConfig.all();
+const storeMinuteAdd = async (id) => {
+    let lines = await ClockLinesConfig.all();
     let newLines;
-    if (id>=0){
-        newLines = await Actions.addMinute(lines.filter(line=>line.id===id));
-        await ClockLinesConfig.update(newLines[0],id);
+    if (id >= 0) {
+        newLines = await Actions.addMinute(lines.filter(line => line.id === id));
+        await ClockLinesConfig.update(newLines[0], id);
     }
-    else
-    {
+    else {
         newLines = await Actions.addMinute(lines);
         await ClockLinesConfig.update(newLines);
     }
@@ -46,11 +45,21 @@ const Emitter = {
     tuneArrows: async (id) => {
         const lines = await ClockLinesConfig.all();
         const filteredLines = lines.filter(line => line.status === 'RUN');
-        const linesTime = filteredLines.map(line => ({
-            id: line.id, time: new Date(Date
-                .parse(`2000-01-01T${line['time']}:00.000${line['zone']
-                    .match(/[+-]\d{1,2}/)}:00`))
-        }));
+        const linesTime = filteredLines.map(line => {
+            const hours = Number(`${line['time']}`.slice(0, 2));
+            const zone = Number(line['zone'].match(/[+-]\d{1,2}/)[0]);
+            let utcHours = hours - zone;
+            if (utcHours < 0) utcHours += 24;
+            return {
+                id: line.id,
+                time: {
+                    getHours: () => Number(`${line['time']}`.slice(0, 2)),
+                    getMinutes: () => Number(`${line['time']}`.slice(3)),
+                    getUTCHours: () => utcHours
+                }
+                //getHours: ()=> new Date(`Sat Jun 08 2019 ${line['time']}:00 GMT${line['zone'].match(/[+-]\d{1,2}/)[0]}00`)
+            }
+        });
         if (typeof(id) === 'string' || typeof(id) === 'number') {
             id = +id;
             const filteredIDs = filteredLines.map(line => line.id);
@@ -58,7 +67,7 @@ const Emitter = {
                 throw new Error(`LINES TUNE: Line with ID ${id} is not found or not started`);
             }
             else {
-                const line=linesTime.filter(lines=>lines.id===id)[0];
+                const line = linesTime.filter(lines => lines.id === id)[0];
                 const lag = dtLib.getMinutesLag(line.time, 10);
                 stm32API.pulseCounter.setPulseCounter([{id: id, ...lag}]);
             }
