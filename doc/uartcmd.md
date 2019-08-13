@@ -8,25 +8,25 @@ List of commands for controlling the microcontroller via UART
 
 ## Main structure of commands and responses  
 
-|  0   |  1   | ...  |  28  |    29    |    30    |    31    |    32    |
-| :--: | :--: | :--: | :--: | :------: | :------: | :------: | :------: |
-| CMD  | DATA | DATA | DATA | CRC32[3] | CRC32[2] | CRC32[1] | CRC32[0] |
+|   0    |   1    |  2   | ...  |  27  |    28    |    29    |    30    |    31    |
+| :----: | :----: | :--: | :--: | :--: | :------: | :------: | :------: | :------: |
+| CMD[1] | CMD[0] | DATA | DATA | DATA | CRC32[3] | CRC32[2] | CRC32[1] | CRC32[0] |
 
-  *Total frame length: 33 bytes.*   
+  *Total frame length: 32 bytes.*   
 
 ## Commands  
 
 *Frame formats are given without CRC32 bytes.*
 
-### 0x00 Restart microcontroller
+### 0x0000 Restart microcontroller
 
-### 0x01 Set the number *N* of pulses to send for the specified lines
+### 0x0001 Set the number *N* of pulses to send for the specified lines
 
 *Frame format*:
 
-|  0   |       1        |       2        |  3   |  4   | ...  |  27  |  28  |
-| :--: | :------------: | :------------: | :--: | :--: | :--: | :--: | :--: |
-| 0x01 | ID<sub>1</sub> | ID<sub>0</sub> | N[1] | N[0] | ...  | N[1] | N[0] |
+|  0..1  |       2        |       3        |  4   |  5   | ...  |  26  |  27  |
+| :----: | :------------: | :------------: | :--: | :--: | :--: | :--: | :--: |
+| 0x0001 | ID<sub>1</sub> | ID<sub>0</sub> | N[1] | N[0] | ...  | N[1] | N[0] |
 
 *Explanations*:
 In ID<sub>1</sub> and ID<sub>0</sub> bytes, the numbers (identifiers) of the lines for which data (number of pulses) will be transmitted in the next bytes are set by bits. ID<sub>0</sub> allows you to set lines with id from 0 to 7. ID<sub>1</sub> - id from 8 to 11. Next are the high and low bytes of the `uint16` type number for the lines specified earlier. First comes the number for the line with the lowest id contained in ID<sub>0</sub> and ID<sub>1</sub> bytes.
@@ -38,12 +38,12 @@ In ID<sub>1</sub> and ID<sub>0</sub> bytes, the numbers (identifiers) of the lin
 *Example* :
 
 ```
-(hex): 01 04 5A 02 D0 02 CF 02 CE 02 CD 02 CC
+(hex): 00 01 04 5A 02 D0 02 CF 02 CE 02 CD 02 CC
 ```
 
 |  data   |             description             |
 | :-----: | :---------------------------------: |
-|  `01`   |                 CMD                 |
+| `00 01` |                 CMD                 |
 |  `04`   |        line ID<sub>10</sub>         |
 |  `5A`   |     lines ID<sub>6,4,3,1</sub>      |
 | `D0 02` | 720 pulses for line ID<sub>1</sub>  |
@@ -52,114 +52,110 @@ In ID<sub>1</sub> and ID<sub>0</sub> bytes, the numbers (identifiers) of the lin
 | `02 CD` | 717 pulses for line ID<sub>6</sub>  |
 | `02 CC` | 716 pulses for line ID<sub>10</sub> |
 
-### 0x02 Increment the pulse counter by 1 for the specified lines
+### 0x0002 Increment the pulse counter by 1 for the specified lines
 
 *Frame format*:
 
-|  0   |  1   |  2   |
-| :--: | :--: | :--: |
-| 0x02 | ID1  | ID0  |
+|  0..1  |  2   |  3   |
+| :----: | :--: | :--: |
+| 0x0002 | ID1  | ID0  |
 
 *Explanations*: 
-*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x01*
+*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x0001*
 Increases the pulse counter for sending to the line by 1 without overwriting the counter. Also allows you to add one minute during the process of setting the correct time (that is, sending a long sequence of pulses)
 *Example* :
 
 ```
-(hex): 02 04 5A
+(hex): 00 02 04 5A
 ```
 
 See command 0x01. 
 
-### 0x03 Reset pulse counter for the specified lines
+### 0x0003 Reset pulse counter for the specified lines
 
 *Frame format*:
 
-|  0   |       1        |       2        |
-| :--: | :------------: | :------------: |
-| 0x03 | <sub>ID1</sub> | <sub>ID0</sub> |
+|  0..1  |       2        |       3        |
+| :----: | :------------: | :------------: |
+| 0x0003 | <sub>ID1</sub> | <sub>ID0</sub> |
 
 *Explanations*: 
-*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x01*
+*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x0001*
 Resets the pulse counter to 0.
 *Example* :
 
 ```
-(hex): 03 04 5A
+(hex): 00 03 04 5A
 ```
 
-See command 0x01. 
+See command 0x0001. 
 
-### 0x04 Suspend pulse counter processing for the specified lines.
+### 0x0004 Suspend pulse counter processing for the specified lines.
 
 *Frame format*:
 
-|  0   |       1        |  2   |
-| :--: | :------------: | :--: |
-| 0x04 | <sub>ID1</sub> | ID0  |
+|  0..1  |       2        |  3   |
+| :----: | :------------: | :--: |
+| 0x0004 | <sub>ID1</sub> | ID0  |
 
 *Explanations*: 
-*See description of <sub>ID0</sub> and <sub>ID1</sub> bytes in command description 0x01*
+*See description of <sub>ID0</sub> and <sub>ID1</sub> bytes in command description 0x0001*
 Sending pulses is blocked. Changing the pulse counter through the UART is not blocked. It is used when receiving an overload signal or for pausing a clock adjustment,
 *Example* :
 
 ```
- (hex): 04 04 5A
+ (hex): 00 04 04 5A
 ```
 
-See command 0x01. 
+See command 0x0001. 
 
-### 0x05 Resume pulse counter processing for the specified lines.
+### 0x0005 Resume pulse counter processing for the specified lines.
 
 *Frame format*:
 
-|  0   |       1        |       2        |
-| :--: | :------------: | :------------: |
-| 0x05 | ID<sub>1</sub> | ID<sub>0</sub> |
+|  0..1  |       2        |       3        |
+| :----: | :------------: | :------------: |
+| 0x0005 | ID<sub>1</sub> | ID<sub>0</sub> |
 
 *Explanations*: 
-*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x01*
-Resume pulse counter processing after suspend command 0x04
+*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x0001*
+Resume pulse counter processing after suspend command 0x0004
 *Example* :
 
 ```
- (hex): 05 04 5A
+ (hex): 00 05 04 5A
 ```
 
-See command 0x01. 
+See command 0x0001. 
 
-### 0x06 Set pulse width
+### 0x0006 Set pulse width
 
 *Frame format*:
 
-|  0   |       1        |       2        |   3   |  ...  |  14   |
-| :--: | :------------: | :------------: | :---: | :---: | :---: |
-| 0x05 | ID<sub>1</sub> | ID<sub>0</sub> | WIDTH | WIDTH | WIDTH |
+|  0..1  |       2        |       3        |    4     |    5     | ...  |    26    |    27    |
+| :----: | :------------: | :------------: | :------: | :------: | :--: | :------: | :------: |
+| 0x0005 | ID<sub>1</sub> | ID<sub>0</sub> | WIDTH[1] | WIDTH[0] |      | WIDTH[1] | WIDTH[0] |
 
 *Explanations*: 
-*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x01*
-Resume pulse counter processing after suspend command 0x04
-
-|   WIDTH(hex)    |  00  |  01  |  02  |  03  |  04  |  05  |  06  |  07  |  08  |  09  |  0A  |  0B  |  0C  |  0D  |  0E  |  0F  |
-| :-------------: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
-| Pulse width(ms) | 250  | 500  | 750  | 1000 | 1250 | 1500 | 1750 | 2000 | 2250 | 2500 | 2750 | 3000 | 3250 | 3500 | 3750 | 4000 |
+*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x0001*
+Set pulse width in milliseconds. 
 
 *Example* :
 
 ```
- (hex): 06 04 5A 01 03 05 07 03
+ (hex): 00 06 04 5A 05 DC 0F A0 1F 04 1F 04 05 DC
 ```
 
-| data |           description            |
-| :--: | :------------------------------: |
-| `06` |               CMD                |
-| `04` |       line ID<sub>10</sub>       |
-| `5A` |    lines ID<sub>6,4,3,1</sub>    |
-| `01` |  500 ms for line ID<sub>1</sub>  |
-| `03` | 1000 ms for line ID<sub>3</sub>  |
-| `05` | 1500 ms for line ID<sub>4</sub>  |
-| `07` | 2000 ms for line ID<sub>6</sub>  |
-| `03` | 1000 ms for line ID<sub>10</sub> |
+|  data   |           description            |
+| :-----: | :------------------------------: |
+| `00 06` |               CMD                |
+|  `04`   |       line ID<sub>10</sub>       |
+|  `5A`   |    lines ID<sub>6,4,3,1</sub>    |
+| `05 DC` | 1500 ms for line ID<sub>1</sub>  |
+| `0F A0` | 4000 ms for line ID<sub>3</sub>  |
+| `1F 04` |  500 ms for line ID<sub>4</sub>  |
+| `1F 04` |  500 ms for line ID<sub>6</sub>  |
+| `05 DC` | 1500 ms for line ID<sub>10</sub> |
 
 ## Responses 
 
@@ -167,27 +163,27 @@ Resume pulse counter processing after suspend command 0x04
 
 ### ~~0x00  *Reserved~~*
 
-### 0x01 Pulse counters
+### 0x0001 Pulse counters
 
  *Frame format*: 
 
-|  0   |       1        |       2        |  3   |  4   | ...  |  27  |  28  |
-| :--: | :------------: | :------------: | :--: | :--: | :--: | :--: | :--: |
-| 0x01 | ID<sub>1</sub> | ID<sub>0</sub> | N[1] | N[0] | ...  | N[1] | N[0] |
+|  0..1  |       2        |       3        |  4   |  5   | ...  |  26  |  27  |
+| :----: | :------------: | :------------: | :--: | :--: | :--: | :--: | :--: |
+| 0x0001 | ID<sub>1</sub> | ID<sub>0</sub> | N[1] | N[0] | ...  | N[1] | N[0] |
 
 *Explanations*: 
 It is returned after each sending of the pulse. Contains the current states of the pulse counters.
-*Also see command 0x01.*
+*Also see command 0x0001.*
 
-### 0x02 Measured current in 8 bit representation
+### 0x0002 Measured current in 8 bit representation
 
 *Frame format*: 
 
-|  0   |       1        |       2        |               3               |              ...              |              14               |
-| :--: | :------------: | :------------: | :---------------------------: | :---------------------------: | :---------------------------: |
-| 0x02 | ID<sub>1</sub> | ID<sub>0</sub> | I<sup>8bit</sup><sub>ma</sub> | I<sup>8bit</sup><sub>ma</sub> | I<sup>8bit</sup><sub>ma</sub> |
+|  0..1  |       2        |       3        |  4   |  5   | ...  |  26  |  27  |
+| :----: | :------------: | :------------: | :--: | :--: | :--: | :--: | :--: |
+| 0x0002 | ID<sub>1</sub> | ID<sub>0</sub> | I[1] | I[0] | ...  | I[1] | I[0] |
 
 *Explanations*: 
-It is returned after each sending of the pulse. Contains an 8-bit representation of the current received from the current sensor of each line. 
+It is returned current in milliamperes  after each sending of the pulse.
 ID<sub>12</sub> corresponds to the total current consumption received from the total current sensor. ID<sub>12</sub> is transmitted in a separate frame.
-*Also see command 0x01.*
+*Also see command 0x0001.*
