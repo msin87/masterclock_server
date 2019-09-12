@@ -4,6 +4,7 @@ const es = express();
 const clockLinesRouter = require('./routes/clockLines');
 const systemConfigRouter = require('./routes/system');
 const scheduleRouter = require('./routes/schedule');
+const fmRouter = require('./routes/fm');
 const ClockLines = require('./Events/clockLinesEmitter');
 const ws = require('./websocket/websocket');
 const stm32API = require('./API/stm32API');
@@ -18,6 +19,7 @@ es.use(function (req, res, next) {
 es.use(clockLinesRouter);
 es.use(systemConfigRouter);
 es.use(scheduleRouter);
+es.use(fmRouter);
 
 ClockLines.tuneArrows().then(
     console.log);

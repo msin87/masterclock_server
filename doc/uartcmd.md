@@ -18,7 +18,7 @@ List of commands for controlling the microcontroller via UART
 
 *Frame formats are given without CRC32 bytes.*
 
-### 0x0000 Restart microcontroller
+### 0x0000 Start/Restart host (stm32)
 
 ### 0x0001 Set the number *N* of pulses to send for the specified lines
 
@@ -29,7 +29,7 @@ List of commands for controlling the microcontroller via UART
 | 0x0001 | ID<sub>1</sub> | ID<sub>0</sub> | N[1] | N[0] | ...  | N[1] | N[0] |
 
 *Explanations*:
-In ID<sub>1</sub> and ID<sub>0</sub> bytes, the numbers (identifiers) of the lines for which data (number of pulses) will be transmitted in the next bytes are set by bits. ID<sub>0</sub> allows you to set lines with id from 0 to 7. ID<sub>1</sub> - id from 8 to 11. Next are the high and low bytes of the `uint16` type number for the lines specified earlier. First comes the number for the line with the lowest id contained in ID<sub>0</sub> and ID<sub>1</sub> bytes.
+**In ID<sub>1</sub> and ID<sub>0</sub> bytes**, the numbers (identifiers) of the lines for which data (number of pulses) will be transmitted in the next bytes are set by bits. ID<sub>0</sub> allows you to set lines with id from 0 to 7. ID<sub>1</sub> - id from 8 to 11. Next are the high and low bytes of the `uint16` type number for the lines specified earlier. First comes the number for the line with the lowest id contained in ID<sub>0</sub> and ID<sub>1</sub> bytes.
 
 | bit  | ID<sub>1</sub>[7] | ID<sub>1</sub>[6] | ID<sub>1</sub>[5] | ID<sub>1</sub>[4] | ID<sub>1</sub>[3] | ID<sub>1</sub>[2] | ID<sub>1</sub>[1] | ID<sub>1</sub>[0] | ID<sub>0</sub>[7] | ID<sub>0</sub>[6] | ID<sub>0</sub>[5] | ID<sub>0</sub>[4] | ID<sub>0</sub>[3] | ID<sub>0</sub>[2] | ID<sub>0</sub>[1] | ID<sub>0</sub>[0] |
 | :--: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: |
@@ -61,7 +61,6 @@ In ID<sub>1</sub> and ID<sub>0</sub> bytes, the numbers (identifiers) of the lin
 | 0x0002 | ID1  | ID0  |
 
 *Explanations*: 
-*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x0001*
 Increases the pulse counter for sending to the line by 1 without overwriting the counter. Also allows you to add one minute during the process of setting the correct time (that is, sending a long sequence of pulses)
 *Example* :
 
@@ -80,7 +79,6 @@ See command 0x01.
 | 0x0003 | <sub>ID1</sub> | <sub>ID0</sub> |
 
 *Explanations*: 
-*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x0001*
 Resets the pulse counter to 0.
 *Example* :
 
@@ -99,7 +97,6 @@ See command 0x0001.
 | 0x0004 | <sub>ID1</sub> | ID0  |
 
 *Explanations*: 
-*See description of <sub>ID0</sub> and <sub>ID1</sub> bytes in command description 0x0001*
 Sending pulses is blocked. Changing the pulse counter through the UART is not blocked. It is used when receiving an overload signal or for pausing a clock adjustment,
 *Example* :
 
@@ -118,7 +115,6 @@ See command 0x0001.
 | 0x0005 | ID<sub>1</sub> | ID<sub>0</sub> |
 
 *Explanations*: 
-*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x0001*
 Resume pulse counter processing after suspend command 0x0004
 *Example* :
 
@@ -137,7 +133,6 @@ See command 0x0001.
 | 0x0005 | ID<sub>1</sub> | ID<sub>0</sub> | WIDTH[1] | WIDTH[0] |      | WIDTH[1] | WIDTH[0] |
 
 *Explanations*: 
-*See description of ID<sub>0</sub> and ID<sub>1</sub> bytes in command description 0x0001*
 Set pulse width in milliseconds. 
 
 *Example* :
@@ -157,6 +152,64 @@ Set pulse width in milliseconds.
 | `1F 04` |  500 ms for line ID<sub>6</sub>  |
 | `05 DC` | 1500 ms for line ID<sub>10</sub> |
 
+### 0x0007 Set polarity of previous pulse
+
+*Frame format*:
+
+|  0..1  |  2   |  3   |   4    |   5    | ...  |   26   |   27   |
+| :----: | :--: | :--: | :----: | :----: | :--: | :----: | :----: |
+| 0x0007 | ID1  | ID0  | POL[1] | POL[0] |      | POL[1] | POL[0] |
+
+*Explanations*:
+Set polarity of previous pulse.
+
+*Example* :
+
+```
+(hex): 00 07 04 5A 00 01 00 00 00 00 00 01 00 01
+```
+
+|  data   |             description              |
+| :-----: | :----------------------------------: |
+| `00 07` |                 CMD                  |
+|  `04`   |              line ID10               |
+|  `5A`   |           lines ID6,4,3,1            |
+| `00 01` | set '+' prev. polarity for line ID1  |
+| `00 00` | set '-' prev. polarity for line ID3  |
+| `00 00` | set '-' prev. polarity for line ID4  |
+| `00 01` | set '+' prev. polarity for line ID6  |
+| `00 01` | set '+' prev. polarity for line ID10 |
+
+### 0x0008 Set relay state
+
+*Frame format*:
+
+|  0..1  |  2   |  3   |    4     |    5     | ...  |    26    |    27    |
+| :----: | :--: | :--: | :------: | :------: | :--: | :------: | :------: |
+| 0x0008 | ID1  | ID0  | RELAY[1] | RELAY[0] |      | RELAY[1] | RELAY[0] |
+
+*Explanations*:
+Set relay state.
+
+*Example* :
+
+```
+(hex): 00 08 04 5A 00 01 00 00 00 00 00 01 00 01
+```
+
+|  data   |    description     |
+| :-----: | :----------------: |
+| `00 08` |        CMD         |
+|  `04`   |     line ID10      |
+|  `5A`   |  lines ID6,4,3,1   |
+| `00 01` | turn on relay ID1  |
+| `00 00` | turn off relay ID3 |
+| `00 00` | turn off relay ID4 |
+| `00 01` | turn on relay ID6  |
+| `00 01` | turn on relay ID10 |
+
+
+
 ## Responses 
 
 *Frame formats are given without CRC32 bytes.*
@@ -173,9 +226,8 @@ Set pulse width in milliseconds.
 
 *Explanations*: 
 It is returned after each sending of the pulse. Contains the current states of the pulse counters.
-*Also see command 0x0001.*
 
-### 0x0002 Measured current in 8 bit representation
+### 0x0002 Measured ADC (12 bit) value of current
 
 *Frame format*: 
 
@@ -186,4 +238,14 @@ It is returned after each sending of the pulse. Contains the current states of t
 *Explanations*: 
 It is returned current in milliamperes  after each sending of the pulse.
 ID<sub>12</sub> corresponds to the total current consumption received from the total current sensor. ID<sub>12</sub> is transmitted in a separate frame.
-*Also see command 0x0001.*
+
+### 0x0007 Current pulse polarity
+
+*Frame format*: 
+
+|  0..1  |       2        |       3        |   4    |   5    | ...  |   26   |   27   |
+| :----: | :------------: | :------------: | :----: | :----: | :--: | :----: | :----: |
+| 0x0007 | ID<sub>1</sub> | ID<sub>0</sub> | POL[1] | POL[0] | ...  | POL[1] | POL[0] |
+
+*Explanations*: 
+Returns the polarity of the rising edge of the pulse for lines. POL: 0x0000 = '-', 0x0001 = '+'. 
