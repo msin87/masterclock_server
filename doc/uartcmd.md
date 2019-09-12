@@ -191,22 +191,43 @@ Set polarity of previous pulse.
 *Explanations*:
 Set relay state.
 
-*Example* :
+### 0x0F00 FM: power
 
-```
-(hex): 00 08 04 5A 00 01 00 00 00 00 00 01 00 01
-```
+*Frame format*:
 
-|  data   |    description     |
-| :-----: | :----------------: |
-| `00 08` |        CMD         |
-|  `04`   |     line ID10      |
-|  `5A`   |  lines ID6,4,3,1   |
-| `00 01` | turn on relay ID1  |
-| `00 00` | turn off relay ID3 |
-| `00 00` | turn off relay ID4 |
-| `00 01` | turn on relay ID6  |
-| `00 01` | turn on relay ID10 |
+|  0..1  |   2   |   3   |
+| :----: | :---: | :---: |
+| 0x0F00 | POWER | POWER |
+
+*Explanations*:
+Power OFF = 0x0000, Power ON = 0x0001
+
+### 0x0F01 FM: set frequency
+
+*Frame format*:
+
+|  0..1  |    2     |    3     |    4    |    5    |
+| :----: | :------: | :------: | :-----: | :-----: |
+| 0x0F01 | reserved | reserved | FREQ[1] | FREQ[0] |
+
+*Explanations*:
+FREQ 985 = 98.5 FM, 1017 = 101.7 FM
+
+### 0x0F02 FM: seek
+
+*Frame format*:
+
+|  0..1  |    2     |    3     |    4    |    5    |
+| :----: | :------: | :------: | :-----: | :-----: |
+| 0x0F02 | reserved | reserved | SEEK[1] | SEEK[0] |
+
+*Explanations*:
+
+|  SEEK  | description |
+| :----: | :---------: |
+| 0x0000 | cancel seek |
+| 0x0001 | start seek  |
+| 0x0002 | resume seek |
 
 
 
@@ -249,3 +270,87 @@ ID<sub>12</sub> corresponds to the total current consumption received from the t
 
 *Explanations*: 
 Returns the polarity of the rising edge of the pulse for lines. POL: 0x0000 = '-', 0x0001 = '+'. 
+
+### 0x0F00 FM: TextA 0
+
+*Frame format*: 
+
+|  0..1  |   2   |   3   |  4   | ...  |  27  |
+| :----: | :---: | :---: | :--: | :--: | :--: |
+| 0x0F00 | PI[1] | PI[0] | CHAR | ...  | CHAR |
+
+*Explanations*: 
+Returns the RDS text A part 0
+
+### 0x0F01 FM: TextA 1
+
+*Frame format*: 
+
+|  0..1  |    2    |    3    |  4   | ...  |  27  |
+| :----: | :-----: | :-----: | :--: | :--: | :--: |
+| 0x0F01 | FREQ[1] | FREQ[0] | CHAR | ...  | CHAR |
+
+*Explanations*: 
+Returns the RDS text A part 1
+
+### 0x0F02 FM: TextA 2
+
+*Frame format*: 
+
+|  0..1  |    2    |    3    |  4   | ...  |  27  |
+| :----: | :-----: | :-----: | :--: | :--: | :--: |
+| 0x0F02 | FREQ[1] | FREQ[0] | CHAR | ...  | CHAR |
+
+*Explanations*: 
+Returns the RDS text A part 2
+
+### 0x0F10 FM: TextB 0
+
+*Frame format*: 
+
+|  0..1  |   2   |   3   |  4   | ...  |  27  |
+| :----: | :---: | :---: | :--: | :--: | :--: |
+| 0x0F10 | PI[1] | PI[0] | CHAR | ...  | CHAR |
+
+*Explanations*: 
+Returns the RDS text B part 0
+
+### 0x0F11 FM: TextB 1
+
+*Frame format*: 
+
+|  0..1  |    2    |    3    |  4   | ...  |  27  |
+| :----: | :-----: | :-----: | :--: | :--: | :--: |
+| 0x0F11 | FREQ[1] | FREQ[0] | CHAR | ...  | CHAR |
+
+*Explanations*: 
+Returns the RDS text B part 1
+
+### 0x0F03 FM: Time
+
+*Frame format*: 
+
+|  0..1  |   2   |   3   |    4    |    5    |    6    |    7    |    8     |    9     |   10   |   11   |    12    |    13    |     14     |     15     |     16      |     17      |
+| :----: | :---: | :---: | :-----: | :-----: | :-----: | :-----: | :------: | :------: | :----: | :----: | :------: | :------: | :--------: | :--------: | :---------: | :---------: |
+| 0x0F03 | PI[1] | PI[0] | FREQ[1] | FREQ[0] | YEAR[1] | YEAR[0] | MONTH[1] | MONTH[0] | DAY[1] | DAY[0] | HOURS[1] | HOURS[0] | MINUTES[1] | MINUTES[0] | TIMEZONE[1] | TIMEZONE[0] |
+
+*Explanations*: 
+Returns the RDS time
+
+### 0x0F04 FM: tune status
+
+*Frame format*: 
+
+|  0..1  |   2    |   3    |    4    |    5    |    6    |    7    |   ...    |
+| :----: | :----: | :----: | :-----: | :-----: | :-----: | :-----: | :------: |
+| 0x0F01 | STATUS | STATUS | FREQ[1] | FREQ[0] | RSSI[1] | RSSI[0] | reserved |
+
+*Explanations*: 
+Returns the tune status
+
+| STATUS |    description     |
+| :----: | :----------------: |
+| 0x0000 |    tune failed     |
+| 0x0001 |    tune success    |
+| 0x0002 | band limit reached |
+
