@@ -1,7 +1,6 @@
 const Actions = require('./clockLinesActions');
 const ClockLinesConfig = require('../config/models/clockLines');
 const stm32API = require('../API/stm32API');
-const SystemConfig = require('../config/models/system');
 const dtLib = require('../lib/datetime');
 const EVENT_LOOP_TIME = 3000;
 const events = new (require('events'));

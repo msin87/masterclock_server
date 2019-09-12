@@ -6,6 +6,7 @@ const systemConfigRouter = require('./routes/system');
 const scheduleRouter = require('./routes/schedule');
 const fmRouter = require('./routes/fm');
 const ClockLines = require('./Events/clockLinesEmitter');
+const FM = require('./Events/fmEmitter');
 const ws = require('./websocket/websocket');
 const stm32API = require('./API/stm32API');
 es.use(bodyParser.json());
@@ -25,7 +26,7 @@ ClockLines.tuneArrows().then(
     console.log);
 ClockLines.startArrowsTick().then(
     console.log);
-
+FM.startScan();
 
 ClockLines.events.on('minuteAddTick', lines => {
 

@@ -1,14 +1,14 @@
 [
   {
     "id": 0,
-    "zone": "Europe/Moscow+03",
+    "zone": "Europe/Moscow+01",
     "status": "RUN",
     "load": "20%",
     "dts": false
   },
   {
     "id": 1,
-    "zone": "Europe/Moscow+03",
+    "zone": "Europe/Moscow+02",
     "status": "RUN",
     "load": "29%",
     "dts": false
@@ -22,7 +22,7 @@
   },
   {
     "id": 3,
-    "zone": "Europe/Moscow+03",
+    "zone": "Europe/Moscow+04",
     "status": "RUN",
     "load": "29%",
     "dts": false

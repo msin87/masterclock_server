@@ -1,10 +1,10 @@
 const HEX_PREFIX = '\\\\x';
 //emulation for clock lines time, stored in NVRAM:
 // id |  time
-// 0  | 03:56
-// 1  | 20:09
-// 2  | 21:09
-// 3  | 22:09
+// 0  | 03:00
+// 1  | 11:00
+// 2  | 16:00
+// 3  | 22:00
 const dataStore = data => {
     this.data = this.data||data;
     return {
@@ -14,7 +14,7 @@ const dataStore = data => {
             this.data=newData
     }
 };
-let nvramEmulated = dataStore('0356200921092209');
+let nvramEmulated = dataStore('0300030003000300');
 const removeDots = linesTime => linesTime.reduce((acc, time) =>
     acc + time.split(':').join(''), '');
 
