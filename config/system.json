@@ -8,6 +8,7 @@
       "width": 500,
       "alternation": true
     },
-    "fmScanInterval":10
+    "fmScanInterval":10,
+    "fmScanOrder": [0,1]
   }
 ]

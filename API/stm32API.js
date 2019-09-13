@@ -108,22 +108,22 @@ const responseParser = income => {
             break;
         case RESP_FM_TEXTA2:
             payload = responses.fmText12(data);
-            // events.emit('response', {type: 'fmRDS', payload});
+            events.emit('response', {type: 'fmTextA', payload});
             break;
         case RESP_FM_TEXTB0:
             payload = responses.fmText0(data);
             break;
         case RESP_FM_TEXTB1:
             payload = responses.fmText12(data);
-            // events.emit('response', {type: 'fmRDS', payload});
+            events.emit('response', {type: 'fmTextB', payload});
             break;
         case RESP_FM_TUNE_STATUS:
             payload = responses.fmTuneStatus(data);
-            //events.emit('response', {type: 'fmTuneStatus', payload});
+            events.emit('response', {type: 'fmTuneStatus', payload});
             break;
         case RESP_FM_TIME:
             payload = responses.fmTime(data);
-            //events.emit('response', {type: 'fmTuneStatus', payload});
+            events.emit('response', {type: 'fmTime', payload});
             break;
 
     }
@@ -214,8 +214,7 @@ const API = {
     },
     fm: {
         setFreq: freq => {
-            const CMD = CMD_FM_SET_FREQ;
-            send(serialPort, makeHeadDataBuffer(CMD, undefined, [freq]));
+            send(serialPort, makeHeadDataBuffer(CMD_FM_SET_FREQ, undefined, [freq]));
         }
     }
 };

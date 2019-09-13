@@ -40,6 +40,15 @@ stm32API.events.on('response', async data => {
             const newLines=await ClockLines.storeMinuteAdd(data.payload[0].id);
             ws.sendToUI({type: 'time', payload: newLines});
             break;
+        case 'fmTextA':
+            await FM.saveText(data);
+            break;
+        case 'fmTextB':
+            break;
+        case 'fmTuneStatus':
+            break;
+        case 'fmTime':
+            break;
         default:
             break;
     }
