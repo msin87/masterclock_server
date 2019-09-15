@@ -1,4 +1,4 @@
-const SERIAL_PORT = 'COM8';
+const SERIAL_PORT = 'COM6';
 const CMD_START = 0x0000;
 const CMD_CNT_SET = 0x0001;
 const CMD_CNT_INCREASE = 0x0002;
@@ -167,20 +167,40 @@ const makeData_u8 = (data = [0]) => {
 const logCb = (err) => err ?
     console.log(err.message) :
     console.log(`${(new Date()).toLocaleString()} ${SERIAL_PORT}: data sent.`);
-const send = (port, buffer) => {
-    const out = Buffer.concat([buffer, buffer_crc32(buffer)])
-    port.write(out, HEADDATA_SIZE + CRC_SIZE);
+const Sender = port => {
+    const buffer = [];
+    let busy = false;
+    const send = data => {
+        if (busy){
+            buffer.push(Buffer.concat([data, buffer_crc32(data)]));
+            return;
+        }
+        busy = true;
+        buffer.push(Buffer.concat([data, buffer_crc32(data)]));
+        port.write(buffer.shift(), HEADDATA_SIZE + CRC_SIZE);
+        port.drain(()=>{
+            busy=false;
+            send(buffer.shift());
+        })
+    };
+    return send;
 };
+const send = Sender(serialPort);
+// const send = (port, buffer) => {
+//     let queue =
+//     const out = Buffer.concat([buffer, buffer_crc32(buffer)]);
+//     port.write(out, HEADDATA_SIZE + CRC_SIZE);
+// };
 const makeHeadDataBuffer = (cmd, lines, data, type = 16) =>
     Buffer.concat([makeHead(cmd, lines), type === 16 ? makeData_u16(data) : makeData_u8(data)], HEADDATA_SIZE);
 const API = {
     restart: () => {
         const buffer = Buffer.alloc(HEADDATA_SIZE);
-        send(serialPort, buffer);
+        send(buffer);
     },
     setPulseWidth: lines => {
         const CMD = 0x06;
-        send(serialPort, makeHeadDataBuffer(CMD, lines, lines.map(line => line.width / 250 - 1), 8));
+        send(makeHeadDataBuffer(CMD, lines, lines.map(line => line.width / 250 - 1), 8));
     },
     events: events,
     pulseCounter: {
@@ -193,28 +213,28 @@ const API = {
             nvramAPI.updateLinesTime(correctedTime);
             lines = lines.filter(val =>
                 val.diff >= 0);
-            send(serialPort, makeHeadDataBuffer(CMD, lines, lines.map(line => line.diff)));
+            send(makeHeadDataBuffer(CMD, lines, lines.map(line => line.diff)));
         },
         incrementPulseCounter: (lines) => {
             const CMD = 0x02;
-            send(serialPort, makeHeadDataBuffer(CMD, lines));
+            send(makeHeadDataBuffer(CMD, lines));
         },
         resetPulseCounter: (lines) => {
             const CMD = 0x03;
-            send(serialPort, makeHeadDataBuffer(CMD, lines));
+            send(makeHeadDataBuffer(CMD, lines));
         },
         suspendPulseCounter: (lines) => {
             const CMD = 0x04;
-            send(serialPort, makeHeadDataBuffer(CMD, lines));
+            send(makeHeadDataBuffer(CMD, lines));
         },
         resumePulseCounter: (lines) => {
             const CMD = 0x05;
-            send(serialPort, makeHeadDataBuffer(CMD, lines));
+            send(makeHeadDataBuffer(CMD, lines));
         }
     },
     fm: {
         setFreq: freq => {
-            send(serialPort, makeHeadDataBuffer(CMD_FM_SET_FREQ, undefined, [freq]));
+            send(makeHeadDataBuffer(CMD_FM_SET_FREQ, undefined, [freq]));
         }
     }
 };
